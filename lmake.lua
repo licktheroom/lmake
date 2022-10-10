@@ -1,56 +1,57 @@
+-- Copyright 2022 licktheroom
+
 local lmake_lib = require("lmake-lib")
 local version = "v0.0.1"
 
 print("\nlmake version: "..version.."\nlmake-lib version: "..lmake_lib.version.."\nLua version: ".._VERSION.."\n")
 
-local success, err, method, doing
+local success, err
 
-local conf = io.open("lmake.conf", "r")
+-- pharse command input
 
-if not conf then
+local lang, compiler
 
-    print("lmake.conf not found.")
-    os.exit()
+local input_mode = nil
 
-end
+for i = 1, #arg do
+    if arg[i] == "--build-dir" then
+        input_mode = "build-dir"
+    elseif arg[i] == "--flags" then
+        input_mode = "flags"
+    elseif arg[i] == "--files" then
+        input_mode = "files"
+    elseif arg[i] == "--language" then
+        input_mode = "language"
+    elseif arg[i] == "--compiler" then
+        input_mode = "compiler"
+    elseif arg[i] == "--name" then
+        input_mode = "name"
+    else
 
-local brackets_deep = 0
-
-for v in conf:lines() do
-
-    local first_char = string.sub(v, 0, 1)
-
-    if not first_char == "#" and not first_char == "\n" then
-
-        for w in string.gmatch(v, "%a+") do
-
-            if not w == "[" and not w == "]" then
-
-                if not method then
-
-                    method = w
-
-                else
-
-
-
-                end
-
-            elseif w == "[" then
-
-                brackets_deep = brackets_deep + 1
-
-            elseif w == "]" then
-
-                brackets_deep = brackets_deep + 1
-
-            end
-
+        -- input modes
+        if input_mode == "build-dir" then
+            lmake_lib.BuildDir(arg[i])
+        elseif input_mode == "flags" then
+            lmake_lib.CompileFlags(false, arg[i])
+        elseif input_mode == "files" then
+            lmake_lib.CoreFiles(arg[i])
+        elseif input_mode == "language" then
+            lang = arg[i]
+        elseif input_mode == "compiler" then
+            compiler = arg[i]
+        elseif input_mode == "name" then
+            lmake_lib.ProjectName(arg[i])
         end
 
     end
-
 end
+
+-- continue
+
+lmake_lib.LanguageAndCompiler(lang, compiler)
+
+lmake_lib:CheckCommands()
+lmake_lib:Compile()
 
 --[[success, err = lmake_lib.LanguageAndCompiler("c", "clang")
 
