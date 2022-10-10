@@ -1,13 +1,14 @@
-name: learn-github-actions
-run-name: ${{ github.actor }} is learning GitHub Actions
+name: Check C Support
+
+run-name: Checking C support for ${{ github.actor}}
+
 on: [push]
+
+
 jobs:
-  check-bats-version:
+  check-hello-world:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-        with:
-          node-version: '14'
-      - run: npm install -g bats
-      - run: bats -v
+      - run: apt install lua
+      - run: lua -v
