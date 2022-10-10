@@ -12,4 +12,4 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: leafo/gh-actions-lua@v9
-      - run: lua -v
+      - run: lua lmake.lua
