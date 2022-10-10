@@ -1,6 +1,5 @@
 --[[
 
-lmake - A make alternitive by licktheroom.
 Copyright 2022 licktheroom
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
@@ -9,6 +8,7 @@ The above copyright notice and this permission notice shall be included in all c
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+_______________________________________________________________________________________________-
 
 Make was to simple and I couldn't understand cmake. So, I made this to flex lua.
 
@@ -200,7 +200,7 @@ function lmake_library:Compile()
 
         if string.match(output, "not") then
             print(colors.red.." FAIL"..colors.reset)
-            return false, "ERROR: '"..v.file.."' does not exist."
+            return false, "ERROR: '"..v.."' does not exist."
         end
 
         print(colors.green.." OK"..colors.reset)
