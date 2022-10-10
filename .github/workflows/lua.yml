@@ -1,0 +1,14 @@
+name: Install Lua/LuaJIT
+
+run-name: Install Lua/LuaJIT
+
+on: [workflow_call]
+
+jobs:
+  install:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v3
+      - uses: leafo/gh-actions-lua@v9
+      - run: lua -v
