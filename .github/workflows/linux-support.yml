@@ -1,18 +1,35 @@
-name: Check C Support
+name: Check Linux Support
 
-run-name: Checking C support for ${{ github.actor}}
+run-name: Checking Linux support for ${{ github.actor}}
 
 on: [push]
 
 
 jobs:
-  check-hello-world:
+  check-c-compile:
     runs-on: ubuntu-latest
-    
+
     steps:
       - uses: actions/checkout@v3
       - uses: leafo/gh-actions-lua@v9
-      - run: echo -e "#include <stdio.h>\n int main()\n{\nfprintf(stdout, \"Hello, lmake!\"); \nreturn 0; \n}" >> main.c
+        with:
+          LuaVersion: "5.2.4"
+
+      - run: echo -e "#include <stdio.h>\n#include <include.h>\nint main(){\nfprintf(stdout, \"%d\", GetTime());\nreturn 0;\n}" >> main.c
+      - run: mkdir include && mkdir lib
+      - run: echo -e "extern int GetTime();" >> include/include.h && echo -e "#include <math.h>\nint GetTime(){\nreturn sqrt(4);\n}" >> lib/test.c
       - run: ./install.sh
-      - run: lua lmake --build-dir . --flags -O3 --language c --compiler gcc --files main.c --name test
-      - run: ./test
+      - run: lua lmake --build-dir . --lib-dirs lib/ --include-dirs include/ --flags -O2 --librarys m --includes stdio math include --language c --compiler gcc --files main.c lib/test.c --name test --c-build-objects
+
+  check-c-library-compile:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: leafo/gh-actions-lua@v9
+        with:
+          LuaVersion: "5.2.4"
+
+      - run: echo -e "int GetTime(){return 5;}" >> main.c
+      - run: ./install.sh
+      - run: lua lmake --build-dir . --language c --compiler gcc --files main.c --c-shared-library

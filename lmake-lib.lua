@@ -30,6 +30,7 @@ lmake.IncludeFiles(...)
 lmake.LanguageAndCompiler(lang, compiler, disable_compliler_check)
 lmake.LibraryFiles(...)
 lmake.ProjectName(name)
+lmake.SetFlags(...)
 --]]
 
 local function PharseCmdOutput(cmd, threadID)
@@ -150,6 +151,8 @@ function lmake_library:CheckCommands()
 
             os.exit()
         end
+
+        lmake_library.SetFlags("dont-find")
     end
 
     return true
@@ -323,6 +326,10 @@ function lmake_library.ProjectName(name)
             lmake_library.project_name = "build"
         end
     end
+end
+
+function lmake_library.SetFlags(..)
+    -- add the flags to lib.lmake_flags
 end
 
 return lmake_library

@@ -1,5 +1,3 @@
-#!/bin/bash
-
 luac -o lmake.luac lmake.lua
 touch lmake
 { cat lmake.luac; } > lmake
