@@ -1,0 +1,17 @@
+name: Check C Support
+
+run-name: Checking C support for ${{ github.actor}}
+
+on: [push]
+
+
+jobs:
+  check-hello-world:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v3
+      - uses: leafo/gh-actions-lua@v9
+      - run: echo "#include <stdio.h> int main(){fprintf(stdio, \"Hello, lmake!\"); return 0; }" > main.c
+      - run: ./install.sh
+      - run: lua lmake --build-dir . --flags -O3 --language c --compiler gcc --files main.c --name test
