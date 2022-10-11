@@ -12,7 +12,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: leafo/gh-actions-lua@v9
-      - run: echo -e "#include <stdio.h>\n int main()\n{\nfprintf(stdio, \"Hello, lmake!\"); \nreturn 0; \n}" >> main.c
+      - run: echo -e "#include <stdio.h>\n int main()\n{\nfprintf(stdout, \"Hello, lmake!\"); \nreturn 0; \n}" >> main.c
       - run: ./install.sh
       - run: lua lmake --build-dir . --flags -O3 --language c --compiler gcc --files main.c --name test
       - run: ./test
