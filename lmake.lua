@@ -48,10 +48,26 @@ end
 
 -- continue
 
-lmake_lib.LanguageAndCompiler(lang, compiler)
+success, err = lmake_lib.LanguageAndCompiler(lang, compiler)
 
-lmake_lib:CheckCommands()
-lmake_lib:Compile()
+if not success then
+    error(err)
+    os.exit()
+end
+
+success, err = lmake_lib:CheckCommands()
+
+if not success then
+    error(err)
+    os.exit()
+end
+
+success, err = lmake_lib:Compile()
+
+if not success then
+    error(err)
+    os.exit()
+end
 
 --[[success, err = lmake_lib.LanguageAndCompiler("c", "clang")
 
