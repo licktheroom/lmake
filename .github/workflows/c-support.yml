@@ -14,4 +14,4 @@ jobs:
       - uses: leafo/gh-actions-lua@v9
       - run: echo "#include <stdio.h> int main(){fprintf(stdio, \"Hello, lmake!\"); return 0; }" > main.c
       - run: ./install.sh
-      - run: ./lmake --build-dir . --flags -O3 --language c --compiler gcc --files main.c --name test
+      - run: lua lmake --build-dir . --flags -O3 --language c --compiler gcc --files main.c --name test
