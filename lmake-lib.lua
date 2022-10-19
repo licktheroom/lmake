@@ -483,7 +483,8 @@ end
 
 function lmake_library.SetFlags(...)
     -- add the flags to lib.lmake_flags
-    for i,v in ipairs(...) do
+
+    for i,v in ipairs(type(...) == "table" and ... or {...}) do
 
         if type(v) == "table" then
             lmake_library.SetFlags(...)
