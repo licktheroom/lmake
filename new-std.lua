@@ -148,7 +148,7 @@ function table.print(t)
 
     end
 
-    io.write("}")
+    io.write(" }")
 
 end
 

@@ -10,6 +10,9 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 ]]
 
+-- we need to set this to find our librarys
+-- package.path is where it looks everytime you require something
+-- read the documentation at lua.org
 package.path = package.path..";/usr/share/lua/lmake/?.lua"
 
 require("new-std")
@@ -50,8 +53,6 @@ for i = 1, #arg do
     end
 
 end
-
-table.print(data)
 
 -- continue
 
@@ -107,6 +108,12 @@ for i,v in ipairs(data) do
 
     end
 
+end
+
+local good, err = lmake_lib:HasBasicInfo(true)
+
+if not good then
+    error("Do not have all needed info.\n"..err)
 end
 
 lmake_lib:Compile()

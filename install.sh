@@ -1,4 +1,5 @@
 #!/bin/bash
+# Copyright 2022 licktheroom
 
 if [ "${1}" = "DEBUG" ] ; then
 
