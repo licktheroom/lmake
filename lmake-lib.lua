@@ -68,7 +68,7 @@ lmake_library.version           = "v0.1"
 
 function lmake_library.AddIncludeDirectorys(...)
     -- Add each given path to lib.include_dirs
-    for i,v in ipairs(...) do
+    for i,v in ipairs(type(...) == "table" and ... or {...}) do
 
         if type(v) == "table" then
 
@@ -86,7 +86,7 @@ end
 function lmake_library.AddLibraryDirectorys(...)
     -- Add each given path to lib.library_dirs
 
-    for i,v in ipairs(...) do
+    for i,v in ipairs(type(...) == "table" and ... or {...}) do
 
         if type(v) == "table" then
 
@@ -356,7 +356,7 @@ end
 
 function lmake_library.CompileFlags(...)
 
-    for i,v in ipairs(...) do
+    for i,v in ipairs(type(...) == "table" and ... or {...}) do
 
         if type(v) == "table" then
             lmake_library.CompileFlags(v)
@@ -370,7 +370,7 @@ end
 
 function lmake_library.CoreFiles(...)
 
-    for i,v in ipairs(...) do
+    for i,v in ipairs(type(...) == "table" and ... or {...}) do
 
         if type(v) == "table" then
             lmake_library.CoreFiles(v)
@@ -428,7 +428,7 @@ end
 
 function lmake_library.IncludeFiles(...)
     -- add the files to lib.code_includes
-    for i,v in ipairs(...) do
+    for i,v in ipairs(type(...) == "table" and ... or {...}) do
 
         if type(v) == "table" then
             lmake_library.IncludeFiles(v)
@@ -445,7 +445,7 @@ end
 
 function lmake_library.LibraryFiles(...)
     -- add the files to lib.code_librarys
-    for i,v in ipairs(...) do
+    for i,v in ipairs(type(...) == "table" and ... or {...}) do
 
         if type(v) == "table" then
             lmake_library.LibraryFiles(v)
