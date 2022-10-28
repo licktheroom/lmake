@@ -19,7 +19,7 @@ jobs:
       - run: mkdir include && mkdir lib
       - run: echo -e "extern int GetTime();" >> include/include.h && echo -e "#include <math.h>\nint GetTime(){\nreturn sqrt(4);\n}" >> lib/test.c
       - run: ./install.sh DEBUG
-      - run: lua lmake --build-dir . --lib-dirs lib/ --include-dirs include/ --flags -O2 -lm -o --librarys m --includes stdio math include --language c --compiler gcc --files main.c lib/test.c --name test --build-objects
+      - run: lua lmake --build-dir . --lib-dirs lib/ --include-dirs include/ --flags -O2 -lm --librarys m --includes stdio math include --language c --compiler gcc --files main.c lib/test.c --name test --build-objects
 
   check-c-library-compile:
     runs-on: ubuntu-latest

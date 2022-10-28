@@ -47,22 +47,22 @@ local lmake_library = {}
 
 -- set default variables
 
-lmake_library.build_dir         = nil
-lmake_library.code_compiler     = nil
-lmake_library.code_includes     = {}
-lmake_library.code_langauge     = nil
-lmake_library.code_librarys     = {}
-lmake_library.compile_files     = {}
-lmake_library.compile_flags     = {}
-lmake_library.include_dirs      = {"/usr/include/"}
-lmake_library.library_dirs      = {"/lib/", "/usr/lib/"}
-lmake_library.lmake_flags       = {}
-lmake_library.lmake_valid_flags = {"build-objects", "dont-find", "disable-compiler-check", "version", "c-shared"}
-lmake_library.ls_command        = nil
-lmake_library.main_threadID     = os.clock()
-lmake_library.project_name      = nil
-lmake_library.required_commands = {"ls", "dir", "find"}
-lmake_library.version           = "v0.1"
+lmake_library.build_dir          = nil
+lmake_library.code_compiler      = nil
+lmake_library.code_includes      = {}
+lmake_library.code_langauge      = nil
+lmake_library.code_librarys      = {}
+lmake_library.compile_files      = {}
+lmake_library.compile_flags      = {}
+lmake_library.include_dirs       = {"/usr/include/"}
+lmake_library.library_dirs       = {"/lib/", "/usr/lib/"}
+lmake_library.lmake_flags        = {}
+lmake_library.lmake_valid_flags  = {"build-objects", "dont-find", "disable-compiler-check", "version", "dont-combine"}
+lmake_library.ls_command         = nil
+lmake_library.main_threadID      = os.clock()
+lmake_library.project_name       = nil
+lmake_library.required_commands  = {"ls", "dir", "find"}
+lmake_library.version            = "v0.1"
 
 -- functions
 
@@ -203,7 +203,7 @@ function lmake_library:CheckPaths()
 
     for i,v in ipairs(lmake_library.include_dirs) do
 
-        if string.match(io.popen(lmake_library.ls_command.." "..v, lmake_library.main_threadID), "not", lmake_library.main_threadID) then
+        if string.match(io.popen(lmake_library.ls_command.." "..v, lmake_library.main_threadID), "not") then
 
             table.remove(lmake_library.include_dirs, v)
 
@@ -213,7 +213,7 @@ function lmake_library:CheckPaths()
 
     for i,v in ipairs(lmake_library.library_dirs) do
 
-        if string.match(io.popen(lmake_library.ls_command.." "..v, lmake_library.main_threadID), "not", lmake_library.main_threadID) then
+        if string.match(io.popen(lmake_library.ls_command.." "..v, lmake_library.main_threadID), "not") then
 
             table.remove(lmake_library.library_dirs, v)
 
@@ -281,6 +281,8 @@ function lmake_library:CheckPaths()
 
 end
 
+-- I need to find a better way to generate commands
+
 function lmake_library:Compile()
 
     -- ensure we have everything
@@ -325,12 +327,60 @@ function lmake_library:Compile()
             print("GOOD")
         else
             error("BAD "..out)
+        end
+
+    else -- compile with objects
+
+        local compile_command = lmake_library.code_compiler
+
+        for i,v in ipairs(lmake_library.compile_flags) do
+
+            compile_command = compile_command.." "..v
 
         end
 
-    end
+        for i,v in ipairs(lmake_library.include_dirs) do
 
-    -- compile with objects
+            compile_command = compile_command.." -I"..v
+
+        end
+
+        for i,v in ipairs(lmake_library.library_dirs) do
+
+            compile_command = compile_command.." -L"..v
+
+        end
+
+        for i,v in ipairs(lmake_library.compile_files) do
+
+            local out = io.popen(compile_command.." -c -o "..string.sub(v, 0, string.len(v)-2)..".o "..v, lmake_library.main_threadID)
+
+            if out == "" then
+                print("GOOD")
+            else
+                error("BAD "..out)
+            end
+
+        end
+
+        compile_command = compile_command.." -o "..lmake_library.project_name
+
+        for i,v in ipairs(lmake_library.compile_files) do
+
+            local s = string.sub(v, 0, string.len(v)-2)
+            compile_command = compile_command.." "..s..".o"
+
+        end
+
+        local out = io.popen(compile_command, lmake_library.main_threadID)
+
+        if out == "" then
+            print("GOOD")
+        else
+            print("BAD "..out)
+        end
+
+    end
 
 end
 
@@ -396,6 +446,7 @@ function lmake_library:HasBasicInfo(set_defaults)
         end
 
         if lmake_library.code_compiler == nil then
+
             if lmake_library.code_langauge == "c" then
                 lmake_library.Compiler("gcc")
             elseif lmake_library.code_langauge == "c++" then
@@ -403,6 +454,7 @@ function lmake_library:HasBasicInfo(set_defaults)
             else
                 return false, "No compiler provided"
             end
+
         end
 
         if lmake_library.project_name == nil then
