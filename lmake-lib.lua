@@ -57,7 +57,7 @@ lmake_library.compile_flags      = {}
 lmake_library.include_dirs       = {"/usr/include/"}
 lmake_library.library_dirs       = {"/lib/", "/usr/lib/"}
 lmake_library.lmake_flags        = {}
-lmake_library.lmake_valid_flags  = {"build-objects", "dont-find", "disable-compiler-check", "version", "dont-combine"}
+lmake_library.lmake_valid_flags  = {"build-objects", "dont-find", "disable-compiler-check", "c-shared"}
 lmake_library.ls_command         = nil
 lmake_library.main_threadID      = os.clock()
 lmake_library.project_name       = nil
@@ -353,7 +353,13 @@ function lmake_library:Compile()
 
         for i,v in ipairs(lmake_library.compile_files) do
 
-            local out = io.popen(compile_command.." -c -o "..string.sub(v, 0, string.len(v)-2)..".o "..v, lmake_library.main_threadID)
+            local out
+
+            if table.find(lmake_library.lmake_flags, "c-shared") then
+                out = io.popen(compile_command.." -c -fPIC -o "..string.sub(v, 0, string.len(v)-2)..".o "..v, lmake_library.main_threadID)
+            else
+                out = io.popen(compile_command.." -c -o "..string.sub(v, 0, string.len(v)-2)..".o "..v, lmake_library.main_threadID)
+            end
 
             if out == "" then
                 print("GOOD")
@@ -363,7 +369,11 @@ function lmake_library:Compile()
 
         end
 
-        compile_command = compile_command.." -o "..lmake_library.project_name
+        if table.find(lmake_library.lmake_flags, "c-shared") then
+            compile_command = compile_command.." -shared -o"..lmake_library.project_name..".so"
+        else
+            compile_command = compile_command.." -o "..lmake_library.project_name
+        end
 
         for i,v in ipairs(lmake_library.compile_files) do
 
