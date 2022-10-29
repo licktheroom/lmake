@@ -24,43 +24,16 @@ lmake.BuildDirectory(path)
 lmake:CheckCommands()
 lmake:CheckPaths()
 lmake:Compile()
-lmake.CompileFlags(overwrite, ...)
+lmake.Compiler(complier)
+lmake.CompileFlags(...)
 lmake.CoreFiles(...)
+lmake:HasBasicInfo(set_defaults)
 lmake.IncludeFiles(...)
-lmake.LanguageAndCompiler(lang, compiler, disable_compliler_check)
+lmake.Language(lang)
 lmake.LibraryFiles(...)
 lmake.ProjectName(name)
+lmake.SetFlags(...)
 --]]
-
-local function PharseCmdOutput(cmd, threadID)
-    -- execute the given command and send the output to a file with the name of theadID
-    local success, txt = os.execute(cmd.." >> "..threadID.." 2>&1")
-
-    -- open and read the entire file
-    local f = io.open(threadID)
-
-    local a = f:read("*a")
-
-    f:close()
-
-    -- remove the file so we don't have clutter and return what we read
-    os.execute("rm "..threadID)
-
-    return a
-end
-
--- TODO: Search for more than one variable
-
-local function TableFind(table, search)
-    -- loop through and see if table has a given value
-    for i,v in ipairs(table) do
-        if v == search then
-            return i
-        end
-    end
-
-    return nil
-end
 
 -- Some nice colors so our output looks fancy
 local colors = {}
@@ -74,230 +47,475 @@ local lmake_library = {}
 
 -- set default variables
 
-lmake_library.build_dir         = nil
-lmake_library.code_compiler     = nil
-lmake_library.code_includes     = {}
-lmake_library.code_langauge     = nil
-lmake_library.code_librarys     = {}
-lmake_library.compile_files     = {}
-lmake_library.compile_flags     = {}
-lmake_library.include_dirs      = {"/usr/include/"}
-lmake_library.library_dirs      = {"/lib/", "/usr/lib/"}
-lmake_library.lmake_flags       = {}
-lmake_library.main_threadID     = os.clock()
-lmake_library.project_name      = nil
-lmake_library.required_commands = {"ls", "dir", "find"}
-lmake_library.version           = "v0.0.1"
+lmake_library.build_dir          = nil
+lmake_library.code_compiler      = nil
+lmake_library.code_includes      = {}
+lmake_library.code_langauge      = nil
+lmake_library.code_librarys      = {}
+lmake_library.compile_files      = {}
+lmake_library.compile_flags      = {}
+lmake_library.include_dirs       = {"/usr/include/"}
+lmake_library.library_dirs       = {"/lib/", "/usr/lib/"}
+lmake_library.lmake_flags        = {}
+lmake_library.lmake_valid_flags  = {"build-objects", "dont-find", "disable-compiler-check", "c-shared"}
+lmake_library.ls_command         = nil
+lmake_library.main_threadID      = os.clock()
+lmake_library.project_name       = nil
+lmake_library.required_commands  = {"ls", "dir", "find"}
+lmake_library.version            = "v0.1"
 
 -- functions
 
--- TODO: this function
 function lmake_library.AddIncludeDirectorys(...)
     -- Add each given path to lib.include_dirs
+    for i,v in ipairs(type(...) == "table" and ... or {...}) do
+
+        if type(v) == "table" then
+
+            lmake_library.AddIncludeDirectorys(v)
+
+        else
+
+            table.insert(lmake_library.include_dirs, v)
+
+        end
+
+    end
 end
 
 function lmake_library.AddLibraryDirectorys(...)
     -- Add each given path to lib.library_dirs
+
+    for i,v in ipairs(type(...) == "table" and ... or {...}) do
+
+        if type(v) == "table" then
+
+            lmake_library.AddLibraryDirectorys(v)
+
+        else
+
+            table.insert(lmake_library.library_dirs, v)
+
+        end
+
+    end
 end
 
 function lmake_library.BuildDir(path)
     -- set lib.build_dir to path
-    lmake_library.build_dir = path
+
+    if string.sub(path, string.len(path)) == "/" then
+
+        lmake_library.build_dir = path
+
+    else
+
+        lmake_library.build_dir = path.."/"
+
+    end
+
 end
 
 function lmake_library:CheckCommands()
+
+    -- see if we should find
+
+    if table.find(lmake_library.lmake_flags, "dont-find") then
+
+        table.remove(lmake_library.required_commands, "find")
+
+    end
 
     -- loop through and check each command
 
     for i,v in ipairs(lmake_library.required_commands) do
 
-        io.write("Checking for "..v.."...")
-        io.flush()
+        if not table.find(lmake_library.lmake_flags, "disable-compiler-check") and v == lmake_library.code_compiler then
 
-        local output
+            local out = io.popen(v.." -v", lmake_library.main_threadID)
 
-        -- we want to treat the compiler a little differen by running it with -v
-        if v == lmake_library.code_compiler then
-            output = PharseCmdOutput(v.." -v", lmake_library.main_threadID)
+            if string.match(out, "not") then
+
+                table.remove(lmake_library.required_commands, v)
+
+            end
+
         else
-            output = PharseCmdOutput(v, lmake_library.main_threadID)
-        end
 
-        -- output the resualt
-        if string.match(output, "not") then
-            table.remove(lmake_library.required_commands, TableFind(lmake_library.required_commands, v))
-            print(colors.red.." FAIL"..colors.reset)
-        else
-            print(colors.green.." OK"..colors.reset)
+            local out = io.popen(v, lmake_library.main_threadID)
+
+            if string.match(out, "not") then
+
+                table.remove(lmake_library.required_commands, v)
+
+            end
+
         end
 
     end
 
-    -- ensure we have at least ls or dir
-    if not TableFind(lmake_library.required_commands, "ls") and not TableFind(lmake_library.required_commands, "dir") then
-        return false, "ERROR: ls and dir not found, need at least one of them!"
+    if table.find(lmake_library.required_commands, "ls") then
+
+        lmake_library.ls_command = "ls"
+
+    elseif table.find(lmake_library.required_commands, "dir") then
+
+        lmake_library.ls_command = "dir"
+
+    else
+
+        error("Do not have 'ls' or 'dir'.")
+
     end
 
-    -- see if we have find, not required but nice to have
-    if not TableFind(lmake_library.required_commands, "find") then
-        print("Command 'find' wasn't found. Unable to look for librarys and include files.")
-        io.write("Continue anyway? (Yes, No): ")
+    if not table.find(lmake_library.required_commands, "find") and not table.find(lmake_library.lmake_flags, "dont-find") then
+        print("'find' command not found, assuming dont-find.")
 
-        local input = string.lower(io.read())
+        table.insert(lmake_library.lmake_flags, "dont-find")
 
-        if input == "n" or input == "no" then
-            print("Leaving...")
-
-            os.exit()
-        end
     end
-
-    return true
 
 end
 
 function lmake_library:CheckPaths()
+
     -- Check lib.build_dir
+
+    if string.match(io.popen(lmake_library.ls_command.." "..lmake_library.build_dir, lmake_library.main_threadID), "not") then
+
+        error("'"..lmake_library.build_dir.."' does not exist.")
+
+    end
+
     -- Check files in lib.compile_files
+
+    for i,v in ipairs(lmake_library.compile_files) do
+
+        if string.match(io.popen(lmake_library.ls_command.." "..v, lmake_library.main_threadID), "not") then
+
+            error("Core file '"..v.."' does not exist")
+
+        end
+
+    end
+
     -- Check each path in lib.include_dirs and lib.library_dirs
+
+    for i,v in ipairs(lmake_library.include_dirs) do
+
+        if string.match(io.popen(lmake_library.ls_command.." "..v, lmake_library.main_threadID), "not") then
+
+            table.remove(lmake_library.include_dirs, v)
+
+        end
+
+    end
+
+    for i,v in ipairs(lmake_library.library_dirs) do
+
+        if string.match(io.popen(lmake_library.ls_command.." "..v, lmake_library.main_threadID), "not") then
+
+            table.remove(lmake_library.library_dirs, v)
+
+        end
+
+    end
+
     -- Check for librarys and includes if any
+
+    if not table.find(lmake_library.lmake_flags, "dont-find") then
+
+        if #lmake_library.code_includes ~= 0 then
+
+            for i,v in ipairs(lmake_library.code_includes) do
+
+                local found = false
+
+                for a,b in ipairs(lmake_library.include_dirs) do
+
+                    if io.popen("find "..b.." -iname \""..v..".h\"", lmake_library.main_threadID) ~= "" then
+
+                        found = true
+
+                    end
+
+                end
+
+                if not found then
+
+                    error("Include file '"..v.."' does not exist.")
+
+                end
+
+            end
+
+        end
+
+        if #lmake_library.code_librarys ~= 0 then
+
+            for i,v in ipairs(lmake_library.code_librarys) do
+
+                local found = false
+
+                for a,b in ipairs(lmake_library.library_dirs) do
+
+                    if io.popen("find "..b.." -iname \"lib"..v..".so\"", lmake_library.main_threadID) ~= "" then
+
+                        found = true
+
+                    end
+
+                end
+
+                if not found then
+
+                    error("Library file '"..v.."' does not exist.")
+
+                end
+
+            end
+
+        end
+
+    end
+
 end
 
+-- I need to find a better way to generate commands
+
 function lmake_library:Compile()
-    print("\nEntering compile state, doing final checks.\n")
 
-    -- check build dir
+    -- ensure we have everything
+    lmake_library:CheckCommands()
+    lmake_library:CheckPaths()
 
-    io.write("Checking for directory '"..lmake_library.build_dir.."'...")
-    io.flush()
+    -- compile without objects
 
-    local output
+    if not table.find(lmake_library.lmake_flags, "build-objects") then
 
-    if TableFind(lmake_library.required_commands, "ls") then
-        output = PharseCmdOutput("ls "..lmake_library.build_dir, lmake_library.main_threadID)
+        local compile_command = lmake_library.code_compiler
+
+        for i,v in ipairs(lmake_library.compile_flags) do
+
+            compile_command = compile_command.." "..v
+
+        end
+
+        for i,v in ipairs(lmake_library.include_dirs) do
+
+            compile_command = compile_command.." -I"..v
+
+        end
+
+        for i,v in ipairs(lmake_library.library_dirs) do
+
+            compile_command = compile_command.." -L"..v
+
+        end
+
+        compile_command = compile_command.." -o "..lmake_library.project_name
+
+        for i,v in ipairs(lmake_library.compile_files) do
+            compile_command = compile_command.." "..v
+        end
+
+        print(compile_command)
+
+        local out = io.popen(compile_command, lmake_library.main_threadID)
+
+        if out == "" then
+            print("GOOD")
+        else
+            error("BAD "..out)
+        end
+
+    else -- compile with objects
+
+        local compile_command = lmake_library.code_compiler
+
+        for i,v in ipairs(lmake_library.compile_flags) do
+
+            compile_command = compile_command.." "..v
+
+        end
+
+        for i,v in ipairs(lmake_library.include_dirs) do
+
+            compile_command = compile_command.." -I"..v
+
+        end
+
+        for i,v in ipairs(lmake_library.library_dirs) do
+
+            compile_command = compile_command.." -L"..v
+
+        end
+
+        for i,v in ipairs(lmake_library.compile_files) do
+
+            local out
+
+            if table.find(lmake_library.lmake_flags, "c-shared") then
+                out = io.popen(compile_command.." -c -fPIC -o "..string.sub(v, 0, string.len(v)-2)..".o "..v, lmake_library.main_threadID)
+            else
+                out = io.popen(compile_command.." -c -o "..string.sub(v, 0, string.len(v)-2)..".o "..v, lmake_library.main_threadID)
+            end
+
+            if out == "" then
+                print("GOOD")
+            else
+                error("BAD "..out)
+            end
+
+        end
+
+        if table.find(lmake_library.lmake_flags, "c-shared") then
+            compile_command = compile_command.." -shared -o"..lmake_library.project_name..".so"
+        else
+            compile_command = compile_command.." -o "..lmake_library.project_name
+        end
+
+        for i,v in ipairs(lmake_library.compile_files) do
+
+            local s = string.sub(v, 0, string.len(v)-2)
+            compile_command = compile_command.." "..s..".o"
+
+        end
+
+        local out = io.popen(compile_command, lmake_library.main_threadID)
+
+        if out == "" then
+            print("GOOD")
+        else
+            print("BAD "..out)
+        end
+
+    end
+
+end
+
+function lmake_library.Compiler(compiler)
+    if compiler == "Unknown" then
+
+        if lmake_library.code_langauge == "c" then
+
+            lmake_library.code_compiler = "gcc"
+
+        elseif lmake_library.code_langauge == "c++" then
+
+            lmake_library.code_compiler = "g++"
+
+        end
+
     else
-        output = PharseCmdOutput("dir "..lmake_library.build_dir, lmake_library.main_threadID)
+
+        lmake_library.code_compiler = compiler
+
     end
+end
 
-    if string.match(output, "not") then
-        print(colors.red.." FAIL"..colors.reset)
-        return false, "ERROR: '"..lmake_library.build_dir.."' does not exist."
-    end
+function lmake_library.CompileFlags(...)
 
-    print(colors.green.." OK"..colors.reset)
+    for i,v in ipairs(type(...) == "table" and ... or {...}) do
 
-    -- check files
-
-    for i,v in ipairs(lmake_library.compile_files) do
-        io.write("Checking for file '"..v.."'...")
-        io.flush()
-
-        if TableFind(lmake_library.required_commands, "ls") then
-            output = PharseCmdOutput("ls "..v, lmake_library.main_threadID)
+        if type(v) == "table" then
+            lmake_library.CompileFlags(v)
         else
-            output = PharseCmdOutput("dir "..v, lmake_library.main_threadID)
+            table.insert(lmake_library.compile_flags, v)
         end
 
-        if string.match(output, "not") then
-            print(colors.red.." FAIL"..colors.reset)
-            return false, "ERROR: '"..v.."' does not exist."
+    end
+
+end
+
+function lmake_library.CoreFiles(...)
+
+    for i,v in ipairs(type(...) == "table" and ... or {...}) do
+
+        if type(v) == "table" then
+            lmake_library.CoreFiles(v)
+        else
+            table.insert(lmake_library.compile_files, v)
         end
 
-        print(colors.green.." OK"..colors.reset)
     end
 
-    -- Show the user we started building
-    print("\nBuilding "..lmake_library.project_name.."...\n")
+end
 
-    -- create the basic command
+function lmake_library:HasBasicInfo(set_defaults)
 
-    local compile_command = lmake_library.code_compiler
-    for i,v in ipairs(lmake_library.compile_flags) do
-        compile_command = compile_command.." "..v
+    if #lmake_library.compile_files == 0 then
+        return false, "No files to compile"
+    elseif lmake_library.code_langauge == nil and lmake_library.code_compiler == nil then
+        return false, "No code lang or compiler"
     end
 
-    compile_command = compile_command.." -o "..lmake_library.build_dir.."/"..lmake_library.project_name.." "
+    if set_defaults then
+        if lmake_library.build_dir == nil then
+            lmake_library.BuildDir(".")
+        end
 
-    -- Loop through each file and compile it!
-    for i,v in ipairs(lmake_library.compile_files) do
+        if lmake_library.code_compiler == nil then
 
-        compile_command = compile_command..v
+            if lmake_library.code_langauge == "c" then
+                lmake_library.Compiler("gcc")
+            elseif lmake_library.code_langauge == "c++" then
+                lmake_library.Compiler("g++")
+            else
+                return false, "No compiler provided"
+            end
 
-        io.write("Compiling "..v.."...")
-        io.flush()
+        end
 
-        output = PharseCmdOutput(compile_command, lmake_library.main_threadID)
+        if lmake_library.project_name == nil then
+            lmake_library.ProjectName()
+        end
+    else
+        if lmake_library.build_dir == nil then
+            return false, "No build dir"
+        end
 
-        if output == "" then
-            print(colors.green.." OK"..colors.reset)
-        else
-            print(colors.red.." FAIL"..colors.reset)
-            return false, "ERROR?\n"..output
+        if lmake_library.code_compiler == nil then
+            return false, "No code compiler"
+        end
+
+        if lmake_library.project_name == nil then
+            return false, "No project name"
         end
     end
 
     return true
-end
 
-function lmake_library.CompileFlags(overwrite, ...)
-    -- check if we should overwrite the flags
-    if overwrite then
-        lmake_library.compile_flags = {}
-    end
-
-    local ar = {...}
-
-    -- loop through given flags and put them in lib.compile_flags
-    for i,v in ipairs(ar) do
-        table.insert(lmake_library.compile_flags, v)
-    end
-end
-
-function lmake_library.CoreFiles(...)
-    local f = {...}
-
-    -- add the files to lib.compile_files
-    for i,v in ipairs(f) do
-        table.insert(lmake_library.compile_files, v)
-    end
 end
 
 function lmake_library.IncludeFiles(...)
     -- add the files to lib.code_includes
+    for i,v in ipairs(type(...) == "table" and ... or {...}) do
+
+        if type(v) == "table" then
+            lmake_library.IncludeFiles(v)
+        else
+            table.insert(lmake_library.code_includes, v)
+        end
+
+    end
 end
 
-function lmake_library.LanguageAndCompiler(lang, compiler, disable_compliler_check)
-
-    -- Set lib.code_langauge and set compiler
-
+function lmake_library.Language(lang)
     lmake_library.code_langauge = lang
-
-    if compiler == nil then
-        if lang == "c" then
-            lmake_library.code_compiler = "gcc"
-        elseif lang == "c++" then
-            lmake_library.code_compiler = "g++"
-        else
-            return false, "ERROR: No default compiler and was not provided with one."
-        end
-    else
-        lmake_library.code_compiler = compiler
-    end
-
-    -- Then, see if we should add it to the list of required commands
-
-    if not disable_compliler_check then
-        table.insert(lmake_library.required_commands, lmake_library.code_compiler)
-    else
-        table.insert(lmake_library.lmake_flags, "disable_compliler_check")
-    end
-
-    return true
-
 end
 
 function lmake_library.LibraryFiles(...)
     -- add the files to lib.code_librarys
+    for i,v in ipairs(type(...) == "table" and ... or {...}) do
+
+        if type(v) == "table" then
+            lmake_library.LibraryFiles(v)
+        else
+            table.insert(lmake_library.code_librarys, v)
+        end
+
+    end
 end
 
 function lmake_library.ProjectName(name)
@@ -322,6 +540,20 @@ function lmake_library.ProjectName(name)
             -- fall back to build
             lmake_library.project_name = "build"
         end
+    end
+end
+
+function lmake_library.SetFlags(...)
+    -- add the flags to lib.lmake_flags
+
+    for i,v in ipairs(type(...) == "table" and ... or {...}) do
+
+        if type(v) == "table" then
+            lmake_library.SetFlags(...)
+        else
+            table.insert(lmake_library.lmake_flags, v)
+        end
+
     end
 end
 
