@@ -2,22 +2,43 @@
 
 lmake is a Lua project creation tool like make and cmake. It's meant to be smart and percise. Please see [Contributing](./CONTRIBUTING.md) for details on how to help.
 
-### Table of contents
+## Table of contents
 
 - [Requirements](#requirements)
 - [Quick Start](#quick-start)
 - [License](#license)
 
-### Requirements
+## Requirements
 
 - Lua <= 5.2
 
-### Quick Start
+## Quick Start
 
-For detailed information see the wiki (when it exists).
-TODO: Finish this
+For detailed information see the [wiki](https://github.com/licktheroom/lmake/wiki).
+### Example
+Currently the only way to use lmake is through the commandline. An example command would be:
 
-### License
+```lmake --files main.c otherfile.c --compiler gcc --flags -O2 --build-dir build/```
+
+ * ```lmake```
+
+The lmake command.
+ * ```--files main.c otherfile.c```
+
+```--files``` tells lmake what files we want to compile. In this case we want to compile ```main.c``` and ```otherfile.c```. You can add any number of files as long as you seperate them with a space.
+ * ```--compiler gcc```
+ 
+ ```--compiler``` says which compiler we should be using. We tell it to use ```gcc```, but it can be anything.
+ * ```--flags -O2```
+
+```--flags``` tells lmake what flags we should run the compiler with. Here we tell it to use ```-O2``` when compiling. This would use the command ```gcc -O2``` when compiling files.
+ * ```--build-dir build/```
+ 
+ ```--build-dir``` defines were we want the final executable to be put. Passing ```build/``` will put the executable in a directory called ```build```.
+
+
+
+## License
 
 MIT License
 
