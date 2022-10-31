@@ -19,6 +19,7 @@ For detailed information see the [wiki](https://github.com/licktheroom/lmake/wik
 Currently the only way to use lmake is through the commandline. An example command would be:
 
 ```lmake --files main.c otherfile.c --compiler gcc --flags -O2 --build-dir build/```
+### Explained
 
  * ```lmake```
 
