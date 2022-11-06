@@ -1,6 +1,6 @@
 # lmake 0.1
 
-lmake is a Lua project creation tool like make and cmake. It's meant to be smart and percise. Please see [Contributing](./CONTRIBUTING.md) for details on how to help.
+lmake is a Lua project creation tool like make and cmake. It's meant to be smart, percise, and easy to use. Please see [Contributing](./CONTRIBUTING.md) for details on how to help.
 
 ## Table of contents
 
@@ -10,6 +10,7 @@ lmake is a Lua project creation tool like make and cmake. It's meant to be smart
 
 ## Requirements
 
+- A Linux OS (No current support for Windows or Mac)
 - Lua <= 5.2
 
 ## Quick Start
