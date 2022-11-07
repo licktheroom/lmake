@@ -10,29 +10,55 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 _______________________________________________________________________________________________-
 
-Make was to simple and I couldn't understand cmake. So, I made this to flex lua.
-
-TODO: Multi-threading
-TODO: lmake.cache so we don't have to find the includes and librarys each time we compile
-
-PharseCmdOutput(cmd, threadID)
-TableFind(table, search)
+lmake is a command-line tool made in Lua used to compile code bases.
+This library will face a rewrite as I add in interactions with files.
 
 lmake.AddIncludeDirectorys(...)
+| Adds directories to lmake_library.library_dirs
+
 lmake.AddLibraryDirectorys(...)
-lmake.BuildDirectory(path)
+| Adds directories to lmake_library.include_dirs
+
+lmake.BuildDir(path)
+| Sets lmake_library.build_dir to path
+
 lmake:CheckCommands()
+| Checks the commands in lmake_library.required_commands exist
+
 lmake:CheckPaths()
+| Checks the paths in lmake_library.include_dirs, lmake_library.library_dirs, and lmake_library.build_dir
+| Then sees if each file in lmake_library.code_includes, lmake_library.code_librarys, and lmake_library.compile_files exist
+
 lmake:Compile()
+| Compiles each file in lmake_library.compile_files
+
 lmake.Compiler(complier)
+| Sets lmake_library.code_compiler to compiler
+
 lmake.CompileFlags(...)
+| Adds flags to lmake_library.compile_flags
+
 lmake.CoreFiles(...)
+| Adds files to lmake_library.compile_files
+
 lmake:HasBasicInfo(set_defaults)
+| Check if we have the minimum information to compile something
+
 lmake.IncludeFiles(...)
+| Adds files to lmake_library.code_includes
+
 lmake.Language(lang)
+| Sets lmake_library.code_langauge to lang
+
 lmake.LibraryFiles(...)
+| Adds files to lmake_library.code_librarys
+
 lmake.ProjectName(name)
+| Sets lmake_library.project_name to name
+| If no name if given use the name of the current directory
+
 lmake.SetFlags(...)
+| Add flags to lmake_library.lmake_flags
 --]]
 
 -- Some nice colors so our output looks fancy

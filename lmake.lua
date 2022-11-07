@@ -10,17 +10,22 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 ]]
 
--- we need to set this to find our librarys
--- package.path is where it looks everytime you require something
--- read the documentation at lua.org
+--[[
+
+This will face a rewrite as I add in interactions with files.
+
+]]
+
+-- Add our library path to where lua looks for required files
 package.path = package.path..";/usr/share/lua/lmake/?.lua"
 
+-- Requires and version number
 require("new-std")
 local lmake_lib = require("lmake-lib")
 
 local version = "v0.1"
 
--- pharse command input
+-- Start: Handle commandline options
 
 local data = {}
 local s = nil
@@ -29,7 +34,7 @@ for i = 1, #arg do
 
     if arg[i] == "--version" or arg[i] == "-v" then
 
-        print("lmake "..version.."\nlmake-lib "..lmake_lib.version.."\nLua ".._VERSION)
+        print("lmake: "..version.."\nlmake-lib: "..lmake_lib.version.."\nLua: ".._VERSION)
         os.exit()
 
     end
@@ -53,8 +58,6 @@ for i = 1, #arg do
     end
 
 end
-
--- continue
 
 for i,v in ipairs(data) do
 
@@ -110,6 +113,13 @@ for i,v in ipairs(data) do
 
 end
 
+-- End: Handle commandline options
+-- Start: Handle lmake files
+
+
+
+-- End: Handle lmake files
+-- Compile!
 local good, err = lmake_lib:HasBasicInfo(true)
 
 if not good then

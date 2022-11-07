@@ -8,7 +8,7 @@ The above copyright notice and this permission notice shall be included in all c
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-]]
+--]]
 
 --[[
 
@@ -35,12 +35,13 @@ io.popen(cmd, id)
 | Almost the same as the original, but now (should) work everywhere.
 | id is required as that's what we name the generated file.
 
-]]
+--]]
 
 -- TABLE
 
 function table.remove(t, va)
 
+    -- Check data types
     if type(t) ~= "table" then
         error("Table expected, was given "..type(t)..".")
     end
@@ -49,6 +50,7 @@ function table.remove(t, va)
         error("Was not given a varible to remove.")
     end
 
+    -- Loop through table and move every value after va down in index
     local found = false
 
     for i,v in ipairs(t) do
@@ -65,12 +67,14 @@ function table.remove(t, va)
 
     end
 
+    -- Set the final value of t to nil to remove it
     t[#t] = nil
 
 end
 
 function table.find(t, va)
 
+    -- Check data types
     if type(t) ~= "table" then
         error("Table expected, was given "..type(t)..".")
     end
@@ -79,6 +83,7 @@ function table.find(t, va)
         error("Was not given a variable to find.")
     end
 
+    -- Look for va in t
     for i,v in ipairs(t) do
 
         if v == va then
@@ -94,6 +99,7 @@ end
 
 function table.stepped(t, start, step, finish)
 
+    -- Check data types
     if type(t) ~= "table" then
         error("Table expected, was given "..type(t)..".")
     end
@@ -110,6 +116,7 @@ function table.stepped(t, start, step, finish)
         error("Finish is not a number")
     end
 
+    -- Step through the table
     local nt = {}
 
     for i = start, finish and finish or #t, step and step or 1 do
@@ -124,10 +131,13 @@ end
 
 function table.print(t)
 
+    -- Check data type
     if type(t) ~= "table" then
         error("Table expected, was given "..type(t)..".")
     end
 
+    -- Print the table
+    -- TODO: Add colors, should only be active if the user wants it.
     io.write("{ ")
 
     for i,v in ipairs(t) do
@@ -157,16 +167,17 @@ end
 -- Not finished, need to check on windows
 function io.popen(cmd, id)
 
+    -- Execute the command, pass output to a file
     local success, txt = os.execute(cmd.." >> "..id.." 2>&1")
 
-    -- open and read the entire file
+    -- Open and read the entire file
     local f = io.open(id)
 
     local a = f:read("*a")
 
     f:close()
 
-    -- remove the file so we don't have clutter
+    -- Remove the file so we don't have clutter
     os.execute("rm "..id)
 
     return a
