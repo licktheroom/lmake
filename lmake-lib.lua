@@ -11,576 +11,498 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 _______________________________________________________________________________________________-
 
 lmake is a command-line tool made in Lua used to compile code bases.
-This library will face a rewrite as I add in interactions with files.
 
-lmake.AddIncludeDirectorys(...)
-| Adds directories to lmake_library.library_dirs
+lmake.Set(datatype, ...)
+lmake.Add(datatype, ...)
+lmake.Remove(datatype, ...)
 
-lmake.AddLibraryDirectorys(...)
-| Adds directories to lmake_library.include_dirs
-
-lmake.BuildDir(path)
-| Sets lmake_library.build_dir to path
-
-lmake:CheckCommands()
-| Checks the commands in lmake_library.required_commands exist
-
-lmake:CheckPaths()
-| Checks the paths in lmake_library.include_dirs, lmake_library.library_dirs, and lmake_library.build_dir
-| Then sees if each file in lmake_library.code_includes, lmake_library.code_librarys, and lmake_library.compile_files exist
-
-lmake:Compile()
-| Compiles each file in lmake_library.compile_files
-
-lmake.Compiler(complier)
-| Sets lmake_library.code_compiler to compiler
-
-lmake.CompileFlags(...)
-| Adds flags to lmake_library.compile_flags
-
-lmake.CoreFiles(...)
-| Adds files to lmake_library.compile_files
-
-lmake:HasBasicInfo(set_defaults)
-| Check if we have the minimum information to compile something
-
-lmake.IncludeFiles(...)
-| Adds files to lmake_library.code_includes
-
-lmake.Language(lang)
-| Sets lmake_library.code_langauge to lang
-
-lmake.LibraryFiles(...)
-| Adds files to lmake_library.code_librarys
-
-lmake.ProjectName(name)
-| Sets lmake_library.project_name to name
-| If no name if given use the name of the current directory
-
-lmake.SetFlags(...)
-| Add flags to lmake_library.lmake_flags
+lmake.Compile()
+lmake.BasicData()
+lmake.Check()
 --]]
 
--- Some nice colors so our output looks fancy
-local colors = {}
-colors.green = "\27[32m"
-colors.reset = "\27[0m"
-colors.red   = "\27[31m"
+local lmake = {}
 
--- start of the actual library
+lmake.Enum = {
+    Datatype = {
+        IncludeDirs = 1,
+        LibDirs     = 2,
+        BuildDir   = 3,
+        Compiler    = 4,
+        Flags       = 5,
+        Files       = 6,
+        Includes    = 7,
+        Language    = 8,
+        Librarys    = 9,
+        Name        = 10,
+        lmakeFlag   = 11
+    },
 
-local lmake_library = {}
+    CoreFlags = {
 
--- set default variables
+        BuildObjects   = 1,
+        Find           = 2
+        --Verbose = 3
 
-lmake_library.build_dir          = nil
-lmake_library.code_compiler      = nil
-lmake_library.code_includes      = {}
-lmake_library.code_langauge      = nil
-lmake_library.code_librarys      = {}
-lmake_library.compile_files      = {}
-lmake_library.compile_flags      = {}
-lmake_library.include_dirs       = {"/usr/include/"}
-lmake_library.library_dirs       = {"/lib/", "/usr/lib/"}
-lmake_library.lmake_flags        = {}
-lmake_library.lmake_valid_flags  = {"build-objects", "dont-find", "disable-compiler-check", "c-shared"}
-lmake_library.ls_command         = nil
-lmake_library.main_threadID      = os.clock()
-lmake_library.project_name       = nil
-lmake_library.required_commands  = {"ls", "dir", "find"}
-lmake_library.version            = "v0.1"
+    }
+}
 
--- functions
+lmake.Commands = {
 
-function lmake_library.AddIncludeDirectorys(...)
-    -- Add each given path to lib.include_dirs
-    for i,v in ipairs(type(...) == "table" and ... or {...}) do
+    ListCommand = nil
 
-        if type(v) == "table" then
+}
 
-            lmake_library.AddIncludeDirectorys(v)
+lmake.Data = {
 
-        else
+    Include_dirs = {"/usr/include/"},
+    Library_dirs = {"/lib/", "/usr/lib/"},
+    Build_dir    = nil,
+    Compiler     = nil,
+    Flags        = {},
+    Files        = {},
+    Includes     = {},
+    Librarys     = {},
+    Language     = nil,
+    Name         = nil,
 
-            table.insert(lmake_library.include_dirs, v)
+    CoreFlags = {
 
+        [lmake.Enum.CoreFlags.BuildObjects]   = false,
+        [lmake.Enum.CoreFlags.Find]           = false
+        --[lmake.Enum.CoreFlags.Verbose] = false,
+
+    }
+
+    Constant = {
+
+        Include_dirs = false,
+        Library_dirs = false,
+        Build_dir    = false,
+        Compiler     = false,
+        Flags        = false,
+        Files        = false,
+        Includes     = false,
+        Librarys     = false,
+        Language     = false,
+        Name         = false
+
+    }
+
+}
+
+lmake.Core = {
+
+    -- include dirs
+    SetIncludeDirs = function(...)
+        local new = {"/usr/include/"}
+
+        for i,v in ipairs(type(...) == "table" and ... or {...}) do
+            table.insert(new, v)
         end
 
-    end
-end
+        lmake.Data.Include_dirs = new
+    end,
 
-function lmake_library.AddLibraryDirectorys(...)
-    -- Add each given path to lib.library_dirs
+    AddIncludeDirs = function(...)
+        for i,v in ipairs(type(...) == "table" and ... or {...}) do
+            table.insert(lmake.Data.Include_dirs, v)
+        end
+    end,
 
-    for i,v in ipairs(type(...) == "table" and ... or {...}) do
+    RemoveIncludeDirs = function(...)
+        for i,v in ipairs(type(...) == "table" and ... or {...}) do
+            table.remove(lmake.Data.Include_dirs, v)
+        end
+    end,
 
-        if type(v) == "table" then
+    -- library dirs
+    SetLibraryDirs = function(...)
+        local new = {"/lib/", "/usr/lib/"}
 
-            lmake_library.AddLibraryDirectorys(v)
-
-        else
-
-            table.insert(lmake_library.library_dirs, v)
-
+        for i,v in ipairs(type(...) == "table" and ... or {...}) do
+            table.insert(new, v)
         end
 
+        lmake.Data.Library_dirs = new
+    end,
+
+    AddLibraryDirs = function(...)
+        for i,v in ipairs(type(...) == "table" and ... or {...}) do
+            table.insert(lmake.Data.Library_dirs, v)
+        end
+    end,
+
+    RemoveLibraryDirs = function(...)
+        for i,v in ipairs(type(...) == "table" and ... or {...}) do
+            table.remove(lmake.Data.Library_dirs, v)
+        end
+    end,
+
+    -- build dir
+
+    SetBuildDir = function(...)
+        assert(type(...) == "string", "Expected string, got "..type(...))
+
+        lmake.Data.Build_dir = ...
+
+        if string.sub(lmake.Data.Build_dir, string.len(lmake.Data.Build_dir)) ~= "/" then
+            make.Data.Build_dir = lmake.Data.Build_dir.."/"
+        end
+    end,
+
+    -- compiler
+
+    SetCompiler = function(...)
+        assert(type(...) == "string", "Expected string, got "..type(...))
+
+        lmake.Data.Compiler = ...
+    end,
+
+    -- flags
+
+    SetFlags = function(...)
+        local new = {}
+
+        for i,v in ipairs(type(...) == "table" and ... or {...}) do
+            table.insert(new, v)
+        end
+
+        lmake.Data.Flags = new
+    end,
+
+    AddFlags = function(...)
+        for i,v in ipairs(type(...) == "table" and ... or {...}) do
+            table.insert(lmake.Data.Flags, v)
+        end
+    end,
+
+    RemoveFlags = function(...)
+        for i,v in ipairs(type(...) == "table" and ... or {...}) do
+            table.remove(lmake.Data.Flags, v)
+        end
+    end,
+
+    -- files
+
+    SetFiles = function(...)
+        local new = {}
+
+        for i,v in ipairs(type(...) == "table" and ... or {...}) do
+            table.insert(new, v)
+        end
+
+        lmake.Data.Files = new
+    end,
+
+    AddFiles = function(...)
+        for i,v in ipairs(type(...) == "table" and ... or {...}) do
+            table.insert(lmake.Data.Files, v)
+        end
+    end,
+
+    RemoveFiles = function(...)
+        for i,v in ipairs(type(...) == "table" and ... or {...}) do
+            table.remove(lmake.Data.Files, v)
+        end
+    end,
+
+    -- includes
+
+    SetIncludes = function(...)
+        local new = {}
+
+        for i,v in ipairs(type(...) == "table" and ... or {...}) do
+            table.insert(new, v)
+        end
+
+        lmake.Data.Includes = new
+    end,
+
+    AddIncludes = function(...)
+        for i,v in ipairs(type(...) == "table" and ... or {...}) do
+            table.insert(lmake.Data.Includes, v)
+        end
+    end,
+
+    RemoveIncludes = function(...)
+        for i,v in ipairs(type(...) == "table" and ... or {...}) do
+            table.remove(lmake.Data.Includes, v)
+        end
+    end,
+
+    -- language
+
+    SetLanguage = function(...)
+        assert(type(...) == "string", "Expected string, got "..type(...))
+
+        lmake.Data.Language = string.lower(...)
+    end,
+
+    -- librarys
+
+    SetLibrarys = function(...)
+        local new = {}
+
+        for i,v in ipairs(type(...) == "table" and ... or {...}) do
+            table.insert(new, v)
+        end
+
+        lmake.Data.Librarys = new
+    end,
+
+    AddLibrarys = function(...)
+        for i,v in ipairs(type(...) == "table" and ... or {...}) do
+            table.insert(lmake.Data.Librarys, v)
+        end
+    end,
+
+    RemoveLibrarys = function(...)
+        for i,v in ipairs(type(...) == "table" and ... or {...}) do
+            table.remove(lmake.Data.Librarys, v)
+        end
+    end,
+
+    -- name
+
+    SetName = function(...)
+        assert(type(...) == "string", "Expected string, got "..type(...))
+
+        lmake.Data.Name = ...
+    end,
+
+    -- core flags
+
+    SetCoreFlag = function(...)
+        local enum = ...
+
+        assert(type(enum) == "number", "Expected number, got "..type(enum))
+        assert(lmake.Data.CoreFlags[enum] ~= nil, "Core flag \""..enum.."\" does not exist")
+
+        lmake.Data.CoreFlags[enum] = true
     end
+
+}
+
+function lmake.Set(datatype, ...)
+
+    if datatype == lmake.Enum.Datatype.IncludeDirs then
+        lmake.Core.SetIncludeDirs(...[1], ...)
+    elseif datatype == lmake.Enum.Datatype.LibDirs then
+        lmake.Core.SetLibraryDirs(...[1], ...)
+    elseif datatype == lmake.Enum.Datatype.BuildDir then
+        lmake.Core.SetBuildDir(...[1], ...)
+    elseif datatype == lmake.Enum.Datatype.Compiler then
+        lmake.Core.SetCompiler(...[1], ...)
+    elseif datatype == lmake.Enum.Datatype.Flags then
+        lmake.Core.SetFlags(...[1], ...)
+    elseif datatype == lmake.Enum.Datatype.Files then
+        lmake.Core.SetFiles(...[1], ...)
+    elseif datatype == lmake.Enum.Datatype.Includes then
+        lmake.Core.SetIncludes(...[1], ...)
+    elseif datatype == lmake.Enum.Datatype.Language then
+        lmake.Core.SetLanguage(...[1], ...)
+    elseif datatype == lmake.Enum.Datatype.Librarys then
+        lmake.Core.SetLibrarys(...[1], ...)
+    elseif datatype == lmake.Enum.Datatype.Name then
+        lmake.Core.SetName(...[1], ...)
+    elseif datatype == lmake.Enum.Datatype.lmakeFlag then
+        lmake.Core.SetCoreFlag(...)
+    else
+        error("Unknown Enum \""..datatype.."\" does not match any datatyes.")
+    end
+
 end
 
-function lmake_library.BuildDir(path)
-    -- set lib.build_dir to path
+function lmake.Add(datatype, ...)
 
-    if string.sub(path, string.len(path)) == "/" then
+    if datatype == lmake.Enum.Datatype.IncludeDirs then
+        lmake.Core.AddIncludeDirs(...)
+    elseif datatype == lmake.Enum.Datatype.LibDirs then
+        lmake.Core.AddLibraryDirs(...)
+    elseif datatype == lmake.Enum.Datatype.BuildDir then
+        error("Build dir cannot be added to, only set.")
+    elseif datatype == lmake.Enum.Datatype.Compiler then
+        error("Compilers cannot be added, only set.")
+    elseif datatype == lmake.Enum.Datatype.Flags then
+        lmake.Core.AddFlags(...)
+    elseif datatype == lmake.Enum.Datatype.Files then
+        lmake.Core.AddFiles(...)
+    elseif datatype == lmake.Enum.Datatype.Includes then
+        lmake.Core.AddIncludes(...)
+    elseif datatype == lmake.Enum.Datatype.Language then
+        error("Languages cannot be added, only set.")
+    elseif datatype == lmake.Enum.Datatype.Librarys then
+        lmake.Core.AddLibrarys(...)
+    elseif datatype == lmake.Enum.Datatype.Name then
+        error("Name cannot be added to, only set.")
+    elseif datatype == lmake.Enum.Datatype.lmakeFlag then
+        error("lmake flags cannot be added to, only set.")
+    else
+        error("Unknown Enum \""..datatype.."\" does not match any datatyes.")
+    end
 
-        lmake_library.build_dir = path
+end
+
+function lmake.Remove(datatype, ...)
+
+    if datatype == lmake.Enum.Datatype.IncludeDirs then
+        lmake.Core.RemoveIncludeDirs(...)
+    elseif datatype == lmake.Enum.Datatype.LibDirs then
+        lmake.Core.RemoveLibraryDirs(...)
+    elseif datatype == lmake.Enum.Datatype.BuildDir then
+        error("Build dir cannot be remove, only set.")
+    elseif datatype == lmake.Enum.Datatype.Compiler then
+        error("Compilers cannot be removed, only set.")
+    elseif datatype == lmake.Enum.Datatype.Flags then
+        lmake.Core.RemoveFlags(...)
+    elseif datatype == lmake.Enum.Datatype.Files then
+        lmake.Core.RemoveFiles(...)
+    elseif datatype == lmake.Enum.Datatype.Includes then
+        lmake.Core.RemoveIncludes(...)
+    elseif datatype == lmake.Enum.Datatype.Language then
+        error("Languages cannot be removed, only set.")
+    elseif datatype == lmake.Enum.Datatype.Librarys then
+        lmake.Core.AddLibrarys(...)
+    elseif datatype == lmake.Enum.Datatype.Name then
+        error("Name cannot be removed, only set.")
+    elseif datatype == lmake.Enum.Datatype.lmakeFlag then
+        error("lmake flags cannot be removed, only set.") -- maybe i should make this set a flag to false
+    else
+        error("Unknown Enum \""..datatype.."\" does not match any datatyes.")
+    end
+
+end
+
+function lmake.Compile()
+    lmake.BasicData()
+    lmake.Check()
+
+    -- create command
+    local ccommand = lmake.Data.Compiler
+
+    for i,v in ipairs(lmake.Data.Flags) do
+        ccommand = ccommand.." "..v
+    end
+
+    for i,v in ipairs(lmake.Data.Include_dirs) do
+        ccommand = ccommand.." -I"..v
+    end
+
+    for i,v in ipairs(lmake.Data.Library_dirs) do
+        ccommand = ccommand.." -L"..v
+    end
+
+    -- compile
+
+    if lmake.Data.CoreFlags[lmake.Enum.CoreFlags.BuildObjects] then
+        for i,v in ipairs(lmake.Data.Files) do
+            local out = io.popen(ccommand.." -c -o "..v..".o "..v, os.clock())
+
+            assert(out == "", "ERROR: "..out)
+        end
+
+        ccommand = ccommand.." -o "..lmake.Data.Build_dir..lmake.Data.Name
+
+        for i,v in ipairs(lmake.Data.Files) do
+            ccommand = ccommand.." "..v..".o"
+        end
+
+        print(ccommand.."\n")
+
+        local out = io.popen(ccommand, os.clock())
+
+        assert(out == "", "ERROR: "..out)
 
     else
+        ccommand = ccommand.." -o "..lmake.Data.Build_dir..lmake.Data.Name
 
-        lmake_library.build_dir = path.."/"
+        for i,v in ipairs(lmake.Data.Files) do
+            ccommand = ccommand.." "..v
+        end
 
+        print(ccommand.."\n")
+
+        local out = io.popen(ccommand, os.clock())
+
+        assert(out == "", "ERROR: "..out)
     end
-
 end
 
-function lmake_library:CheckCommands()
+function lmake.BasicData()
+    assert(#lmake.Data.Files > 0, "No files were given.")
+    assert(lmake.Data.Compiler or lmake.Data.Language, "Was not given a compiler.")
 
-    -- see if we should find
-
-    if table.find(lmake_library.lmake_flags, "dont-find") then
-
-        table.remove(lmake_library.required_commands, "find")
-
-    end
-
-    -- loop through and check each command
-
-    for i,v in ipairs(lmake_library.required_commands) do
-
-        if not table.find(lmake_library.lmake_flags, "disable-compiler-check") and v == lmake_library.code_compiler then
-
-            local out = io.popen(v.." -v", lmake_library.main_threadID)
-
-            if string.match(out, "not") then
-
-                table.remove(lmake_library.required_commands, v)
-
-            end
-
+    if lmake.Data.Compiler == nil then
+        if lmake.Data.Language == "c" then
+            lmake.Data.Compiler = "gcc"
+        elseif lmake.Data.Language == "c++" then
+            lmake.Data.Compiler = "g++"
         else
-
-            local out = io.popen(v, lmake_library.main_threadID)
-
-            if string.match(out, "not") then
-
-                table.remove(lmake_library.required_commands, v)
-
-            end
-
+            error("No default compiler known for lang "..lmake.Data.Language)
         end
-
     end
 
-    if table.find(lmake_library.required_commands, "ls") then
-
-        lmake_library.ls_command = "ls"
-
-    elseif table.find(lmake_library.required_commands, "dir") then
-
-        lmake_library.ls_command = "dir"
-
-    else
-
-        error("Do not have 'ls' or 'dir'.")
-
+    if lmake.Data.Build_dir == nil then
+        lmake.Data.Build_dir = "./"
     end
 
-    if not table.find(lmake_library.required_commands, "find") and not table.find(lmake_library.lmake_flags, "dont-find") then
-        print("'find' command not found, assuming dont-find.")
-
-        table.insert(lmake_library.lmake_flags, "dont-find")
-
+    if lmake.Data.Name == nil then
+        lmake.Data.Name = "Executable"
     end
-
 end
 
-function lmake_library:CheckPaths()
+function lmake.Check()
+    -- commands
+    if lmake.Data.CoreFlags[lmake.Enum.CoreFlags.Find] then
 
-    -- Check lib.build_dir
+        if string.match(io.popen("ls", os.clock()), "not") then
+            assert(string.match(io.popen("dir", os.clock()), "not") == nil, "No list command.")
 
-    if string.match(io.popen(lmake_library.ls_command.." "..lmake_library.build_dir, lmake_library.main_threadID), "not") then
-
-        error("'"..lmake_library.build_dir.."' does not exist.")
-
-    end
-
-    -- Check files in lib.compile_files
-
-    for i,v in ipairs(lmake_library.compile_files) do
-
-        if string.match(io.popen(lmake_library.ls_command.." "..v, lmake_library.main_threadID), "not") then
-
-            error("Core file '"..v.."' does not exist")
-
+            lmake.Commands.ListCommand = "dir"
+        else
+            lmake.Commands.ListCommand = "ls"
         end
 
     end
 
-    -- Check each path in lib.include_dirs and lib.library_dirs
+    assert(string.match(io.popen(lmake.Data.Compiler.." -v", os.clock()), "not") == nil, "Compiler does not exist.")
+    -- files
 
-    for i,v in ipairs(lmake_library.include_dirs) do
+    if lmake.Data.CoreFlags[lmake.Enum.CoreFlags.Find] then
 
-        if string.match(io.popen(lmake_library.ls_command.." "..v, lmake_library.main_threadID), "not") then
-
-            table.remove(lmake_library.include_dirs, v)
-
+        for i,v in ipairs(lmake.Data.Files) do
+            if string.match(io.popen(lmake.Commands.ListCommand.." "..v, os.clock()), "cannot") then
+                error("File \""..v.."\" does not exist.")
+            end
         end
 
-    end
-
-    for i,v in ipairs(lmake_library.library_dirs) do
-
-        if string.match(io.popen(lmake_library.ls_command.." "..v, lmake_library.main_threadID), "not") then
-
-            table.remove(lmake_library.library_dirs, v)
-
+        for i,v in ipairs(lmake.Data.Library_dirs) do
+            if string.match(io.popen(lmake.Commands.ListCommand.." "..v, os.clock()), "cannot") then
+                error("Library directory \""..v.."\" does not exist.")
+            end
         end
 
-    end
+        for i,v in ipairs(lmake.Data.Includes_dirs) do
+            if string.match(io.popen(lmake.Commands.ListCommand.." "..v, os.clock()), "cannot") then
+                error("Include directory \""..v.."\" does not exist.")
+            end
+        end
 
-    -- Check for librarys and includes if any
+        -- check libs
+        if #lmake.Data.Librarys > 0 then
+            for i,v in ipairs(lmake.Data.Library_dirs) do
+                local cache = io.popen(lmake.Commands.ListCommand.." "..v, os.clock())
 
-    if not table.find(lmake_library.lmake_flags, "dont-find") then
-
-        if #lmake_library.code_includes ~= 0 then
-
-            for i,v in ipairs(lmake_library.code_includes) do
-
-                local found = false
-
-                for a,b in ipairs(lmake_library.include_dirs) do
-
-                    if io.popen("find "..b.." -iname \""..v..".h\"", lmake_library.main_threadID) ~= "" then
-
-                        found = true
-
+                for a,d in ipairs(lmake.Data.Librarys) do
+                    if not string.match(cache, "lib"..v..".so") then
+                        error("Library \""..v.."\" does not exist.")
                     end
-
                 end
-
-                if not found then
-
-                    error("Include file '"..v.."' does not exist.")
-
-                end
-
             end
-
-        end
-
-        if #lmake_library.code_librarys ~= 0 then
-
-            for i,v in ipairs(lmake_library.code_librarys) do
-
-                local found = false
-
-                for a,b in ipairs(lmake_library.library_dirs) do
-
-                    if io.popen("find "..b.." -iname \"lib"..v..".so\"", lmake_library.main_threadID) ~= "" then
-
-                        found = true
-
-                    end
-
-                end
-
-                if not found then
-
-                    error("Library file '"..v.."' does not exist.")
-
-                end
-
-            end
-
-        end
-
-    end
-
-end
-
--- I need to find a better way to generate commands
-
-function lmake_library:Compile()
-
-    -- ensure we have everything
-    lmake_library:CheckCommands()
-    lmake_library:CheckPaths()
-
-    -- compile without objects
-
-    if not table.find(lmake_library.lmake_flags, "build-objects") then
-
-        local compile_command = lmake_library.code_compiler
-
-        for i,v in ipairs(lmake_library.compile_flags) do
-
-            compile_command = compile_command.." "..v
-
-        end
-
-        for i,v in ipairs(lmake_library.include_dirs) do
-
-            compile_command = compile_command.." -I"..v
-
-        end
-
-        for i,v in ipairs(lmake_library.library_dirs) do
-
-            compile_command = compile_command.." -L"..v
-
-        end
-
-        compile_command = compile_command.." -o "..lmake_library.project_name
-
-        for i,v in ipairs(lmake_library.compile_files) do
-            compile_command = compile_command.." "..v
-        end
-
-        print(compile_command)
-
-        local out = io.popen(compile_command, lmake_library.main_threadID)
-
-        if out == "" then
-            print("GOOD")
-        else
-            error("BAD "..out)
-        end
-
-    else -- compile with objects
-
-        local compile_command = lmake_library.code_compiler
-
-        for i,v in ipairs(lmake_library.compile_flags) do
-
-            compile_command = compile_command.." "..v
-
-        end
-
-        for i,v in ipairs(lmake_library.include_dirs) do
-
-            compile_command = compile_command.." -I"..v
-
-        end
-
-        for i,v in ipairs(lmake_library.library_dirs) do
-
-            compile_command = compile_command.." -L"..v
-
-        end
-
-        for i,v in ipairs(lmake_library.compile_files) do
-
-            local out
-
-            if table.find(lmake_library.lmake_flags, "c-shared") then
-                out = io.popen(compile_command.." -c -fPIC -o "..string.sub(v, 0, string.len(v)-2)..".o "..v, lmake_library.main_threadID)
-            else
-                out = io.popen(compile_command.." -c -o "..string.sub(v, 0, string.len(v)-2)..".o "..v, lmake_library.main_threadID)
-            end
-
-            if out == "" then
-                print("GOOD")
-            else
-                error("BAD "..out)
-            end
-
-        end
-
-        if table.find(lmake_library.lmake_flags, "c-shared") then
-            compile_command = compile_command.." -shared -o"..lmake_library.project_name..".so"
-        else
-            compile_command = compile_command.." -o "..lmake_library.project_name
-        end
-
-        for i,v in ipairs(lmake_library.compile_files) do
-
-            local s = string.sub(v, 0, string.len(v)-2)
-            compile_command = compile_command.." "..s..".o"
-
-        end
-
-        local out = io.popen(compile_command, lmake_library.main_threadID)
-
-        if out == "" then
-            print("GOOD")
-        else
-            print("BAD "..out)
-        end
-
-    end
-
-end
-
-function lmake_library.Compiler(compiler)
-    if compiler == "Unknown" then
-
-        if lmake_library.code_langauge == "c" then
-
-            lmake_library.code_compiler = "gcc"
-
-        elseif lmake_library.code_langauge == "c++" then
-
-            lmake_library.code_compiler = "g++"
-
-        end
-
-    else
-
-        lmake_library.code_compiler = compiler
-
-    end
-end
-
-function lmake_library.CompileFlags(...)
-
-    for i,v in ipairs(type(...) == "table" and ... or {...}) do
-
-        if type(v) == "table" then
-            lmake_library.CompileFlags(v)
-        else
-            table.insert(lmake_library.compile_flags, v)
-        end
-
-    end
-
-end
-
-function lmake_library.CoreFiles(...)
-
-    for i,v in ipairs(type(...) == "table" and ... or {...}) do
-
-        if type(v) == "table" then
-            lmake_library.CoreFiles(v)
-        else
-            table.insert(lmake_library.compile_files, v)
-        end
-
-    end
-
-end
-
-function lmake_library:HasBasicInfo(set_defaults)
-
-    if #lmake_library.compile_files == 0 then
-        return false, "No files to compile"
-    elseif lmake_library.code_langauge == nil and lmake_library.code_compiler == nil then
-        return false, "No code lang or compiler"
-    end
-
-    if set_defaults then
-        if lmake_library.build_dir == nil then
-            lmake_library.BuildDir(".")
-        end
-
-        if lmake_library.code_compiler == nil then
-
-            if lmake_library.code_langauge == "c" then
-                lmake_library.Compiler("gcc")
-            elseif lmake_library.code_langauge == "c++" then
-                lmake_library.Compiler("g++")
-            else
-                return false, "No compiler provided"
-            end
-
-        end
-
-        if lmake_library.project_name == nil then
-            lmake_library.ProjectName()
-        end
-    else
-        if lmake_library.build_dir == nil then
-            return false, "No build dir"
-        end
-
-        if lmake_library.code_compiler == nil then
-            return false, "No code compiler"
-        end
-
-        if lmake_library.project_name == nil then
-            return false, "No project name"
-        end
-    end
-
-    return true
-
-end
-
-function lmake_library.IncludeFiles(...)
-    -- add the files to lib.code_includes
-    for i,v in ipairs(type(...) == "table" and ... or {...}) do
-
-        if type(v) == "table" then
-            lmake_library.IncludeFiles(v)
-        else
-            table.insert(lmake_library.code_includes, v)
         end
 
     end
 end
 
-function lmake_library.Language(lang)
-    lmake_library.code_langauge = lang
-end
-
-function lmake_library.LibraryFiles(...)
-    -- add the files to lib.code_librarys
-    for i,v in ipairs(type(...) == "table" and ... or {...}) do
-
-        if type(v) == "table" then
-            lmake_library.LibraryFiles(v)
-        else
-            table.insert(lmake_library.code_librarys, v)
-        end
-
-    end
-end
-
-function lmake_library.ProjectName(name)
-    -- set name if we were given one
-    if name then
-        lmake_library.project_name = name
-    else
-        --if not given a name, get current directory and set name to that
-
-        local pwd = os.getenv("PWD")
-
-        if pwd then
-            local t = {}
-
-            for v in string.gmatch(pwd, "/(%w+)") do
-                t[#t + 1] = v
-            end
-
-
-            lmake_library.project_name = t[#t]
-        else
-            -- fall back to build
-            lmake_library.project_name = "build"
-        end
-    end
-end
-
-function lmake_library.SetFlags(...)
-    -- add the flags to lib.lmake_flags
-
-    for i,v in ipairs(type(...) == "table" and ... or {...}) do
-
-        if type(v) == "table" then
-            lmake_library.SetFlags(...)
-        else
-            table.insert(lmake_library.lmake_flags, v)
-        end
-
-    end
-end
-
-return lmake_library
+return lmake

@@ -32,7 +32,7 @@ local s = nil
 
 for i = 1, #arg do
 
-    if arg[i] == "--version" or arg[i] == "-v" then
+    if arg[i] == "-version" then
 
         print("lmake: "..version.."\nlmake-lib: "..lmake_lib.version.."\nLua: ".._VERSION)
         os.exit()
@@ -47,11 +47,7 @@ for i = 1, #arg do
 
     else
 
-        if s == nil then
-
-            error("Stray option")
-
-        end
+        assert(s, "Stray option "..arg[i])
 
         table.insert(data[#data], arg[i])
 
@@ -63,55 +59,76 @@ for i,v in ipairs(data) do
 
     if v[1] == "include-dirs" then
 
-        lmake_lib.AddIncludeDirectorys(table.stepped(v, 2))
+        lmake_lib.Set(lmake_lib.Enum.Datatype.IncludeDirs, table.stepped(v, 2))
 
     elseif v[1] == "lib-dirs" then
 
-        lmake_lib.AddLibraryDirectorys(table.stepped(v, 2))
+        lmake_lib.Set(lmake_lib.Enum.Datatype.LibDirs, table.stepped(v, 2))
 
     elseif v[1] == "build-dir" then
 
-        lmake_lib.BuildDir(v[2])
+        lmake_lib.Set(lmake_lib.Enum.Datatype.BuildDir, v[2])
 
     elseif v[1] == "compiler" then
 
-        lmake_lib.Compiler(v[2])
+        lmake_lib.Set(lmake_lib.Enum.Datatype.Compiler, v[2])
 
     elseif v[1] == "flags" then
 
-        lmake_lib.CompileFlags(table.stepped(v, 2))
+        lmake_lib.Set(lmake_lib.Enum.Datatype.Flags, table.stepped(v, 2))
 
     elseif v[1] == "files" then
 
-        lmake_lib.CoreFiles(table.stepped(v, 2))
+        lmake_lib.Set(lmake_lib.Enum.Datatype.Files, table.stepped(v, 2))
 
     elseif v[1] == "includes" then
 
-        lmake_lib.IncludeFiles(table.stepped(v, 2))
+        lmake_lib.Set(lmake_lib.Enum.Datatype.Includes, table.stepped(v, 2))
 
     elseif v[1] == "language" then
 
-        lmake_lib.Language(v[2])
+        lmake_lib.Set(lmake_lib.Enum.Datatype.Language, v[2])
 
     elseif v[1] == "librarys" then
 
-        lmake_lib.LibraryFiles(table.stepped(v, 2))
+        lmake_lib.Set(lmake_lib.Enum.Datatype.Librarys, table.stepped(v, 2))
 
     elseif v[1] == "name" then
 
-        lmake_lib.ProjectName(v[2])
-
-    elseif table.find(lmake_lib.lmake_valid_flags, v[1]) then
-
-        lmake_lib.SetFlags(v[1])
+        lmake_lib.Set(lmake_lib.Enum.Datatype.Name, v[2])
 
     else
 
-        error("Invalid option: "..v[1])
+        if v[1] == "build-objects" then
+            lmake_lib.Set(lmake_lib.Enum.Datatype.lmakeFlag, lmake_lib.Enum.CoreFlags.BuildObjects)
+        elseif v[1] == "find" then
+            lmake_lib.Set(lmake_lib.Enum.Datatype.lmakeFlag, lmake_lib.Enum.CoreFlags.Find)
+        elseif v[1] == "c-shared-library" then
+            lmake_lib.Set(lmake_lib.Enum.Datatype.lmakeFlag, lmakie_lib.Enum.CoreFlags.CSharedLibrary)
+        else
+            error("Unknown option "..v[1])
+        end
 
     end
 
 end
+
+table.print(lmake_lib.Data.Include_dirs)
+print("")
+table.print(lmake_lib.Data.Library_dirs)
+print("\n"..lmake_lib.Data.Build_dir.."\n"..lmake_lib.Data.Compiler)
+table.print(lmake_lib.Data.Flags)
+print("")
+table.print(lmake_lib.Data.Files)
+print("")
+table.print(lmake_lib.Data.Includes)
+print("")
+table.print(lmake_lib.Data.Librarys)
+print("\n"..lmake_lib.Data.Language.."\n"..lmake_lib.Data.Name)
+table.print(lmake_lib.Data.CoreFlags)
+print("")
+
+lmake_lib.Compile()
 
 -- End: Handle commandline options
 -- Start: Handle lmake files
@@ -120,10 +137,3 @@ end
 
 -- End: Handle lmake files
 -- Compile!
-local good, err = lmake_lib:HasBasicInfo(true)
-
-if not good then
-    error("Do not have all needed info.\n"..err)
-end
-
-lmake_lib:Compile()

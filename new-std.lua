@@ -42,13 +42,8 @@ io.popen(cmd, id)
 function table.remove(t, va)
 
     -- Check data types
-    if type(t) ~= "table" then
-        error("Table expected, was given "..type(t)..".")
-    end
-
-    if not va then
-        error("Was not given a varible to remove.")
-    end
+    assert(type(t) == "table", "Table expected, got "..type(t))
+    assert(va, "Variable to remove is nil.")
 
     -- Loop through table and move every value after va down in index
     local found = false
@@ -75,13 +70,8 @@ end
 function table.find(t, va)
 
     -- Check data types
-    if type(t) ~= "table" then
-        error("Table expected, was given "..type(t)..".")
-    end
-
-    if not va then
-        error("Was not given a variable to find.")
-    end
+    assert(type(t) == "table", "Table expected, got "..type(t))
+    assert(va, "Variable to find is nil.")
 
     -- Look for va in t
     for i,v in ipairs(t) do
@@ -100,21 +90,10 @@ end
 function table.stepped(t, start, step, finish)
 
     -- Check data types
-    if type(t) ~= "table" then
-        error("Table expected, was given "..type(t)..".")
-    end
-
-    if type(start) ~= "number" then
-        error("Number expected, was given "..type(start)..".")
-    end
-
-    if step and type(step) ~= "number" then
-        error("Step is not a number")
-    end
-
-    if finish and type(finish) ~= "number" then
-        error("Finish is not a number")
-    end
+    assert(type(t) == "table", "Table expected, got "..type(t))
+    assert(type(start) == "number", "Number expected, got "..type(start))
+    assert(step == nil or type(step) == "number", "Number or nil expected, got "..type(step))
+    assert(finish == nil or type(finish) == "number", "Number or nil expected, got "..type(finish))
 
     -- Step through the table
     local nt = {}
@@ -129,12 +108,10 @@ function table.stepped(t, start, step, finish)
 
 end
 
-function table.print(t)
+function table.print(t) -- styled should be the color var, should be nil or bool
 
     -- Check data type
-    if type(t) ~= "table" then
-        error("Table expected, was given "..type(t)..".")
-    end
+    assert(type(t) == "table", "Table expected, got "..type(t))
 
     -- Print the table
     -- TODO: Add colors, should only be active if the user wants it.
@@ -152,7 +129,7 @@ function table.print(t)
 
         else
 
-            io.write(v.." ")
+            io.write(tostring(v)..", ")
 
         end
 
@@ -165,6 +142,8 @@ end
 -- IO
 
 -- Not finished, need to check on windows
+-- Well, I know it doesn't work on windows
+-- I need to figure that out
 function io.popen(cmd, id)
 
     -- Execute the command, pass output to a file
