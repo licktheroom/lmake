@@ -480,8 +480,8 @@ function lmake.Check()
                 local cache = io.popen(lmake.Commands.ListCommand.." "..v, os.clock())
 
                 for a,d in ipairs(lmake.Data.Librarys) do
-                    if not string.match(cache, "lib"..v..".so") then
-                        error("Library \""..v.."\" does not exist.")
+                    if not string.match(cache, "lib"..d..".so") then
+                        error("Library \""..d.."\" does not exist.")
                     end
                 end
             end
