@@ -272,25 +272,25 @@ lmake.Core = {
 function lmake.Set(datatype, ...)
 
     if datatype == lmake.Enum.Datatype.IncludeDirs then
-        lmake.Core.SetIncludeDirs(...[1], ...)
+        lmake.Core.SetIncludeDirs(...)
     elseif datatype == lmake.Enum.Datatype.LibDirs then
-        lmake.Core.SetLibraryDirs(...[1], ...)
+        lmake.Core.SetLibraryDirs(...)
     elseif datatype == lmake.Enum.Datatype.BuildDir then
-        lmake.Core.SetBuildDir(...[1], ...)
+        lmake.Core.SetBuildDir(...)
     elseif datatype == lmake.Enum.Datatype.Compiler then
-        lmake.Core.SetCompiler(...[1], ...)
+        lmake.Core.SetCompiler(...)
     elseif datatype == lmake.Enum.Datatype.Flags then
-        lmake.Core.SetFlags(...[1], ...)
+        lmake.Core.SetFlags(...)
     elseif datatype == lmake.Enum.Datatype.Files then
-        lmake.Core.SetFiles(...[1], ...)
+        lmake.Core.SetFiles(...)
     elseif datatype == lmake.Enum.Datatype.Includes then
-        lmake.Core.SetIncludes(...[1], ...)
+        lmake.Core.SetIncludes(...)
     elseif datatype == lmake.Enum.Datatype.Language then
-        lmake.Core.SetLanguage(...[1], ...)
+        lmake.Core.SetLanguage(...)
     elseif datatype == lmake.Enum.Datatype.Librarys then
-        lmake.Core.SetLibrarys(...[1], ...)
+        lmake.Core.SetLibrarys(...)
     elseif datatype == lmake.Enum.Datatype.Name then
-        lmake.Core.SetName(...[1], ...)
+        lmake.Core.SetName(...)
     elseif datatype == lmake.Enum.Datatype.lmakeFlag then
         lmake.Core.SetCoreFlag(...)
     else
