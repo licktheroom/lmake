@@ -132,7 +132,7 @@ lmake.Core = {
         lmake.Data.Build_dir = ...
 
         if string.sub(lmake.Data.Build_dir, string.len(lmake.Data.Build_dir)) ~= "/" then
-            make.Data.Build_dir = lmake.Data.Build_dir.."/"
+            lmake.Data.Build_dir = lmake.Data.Build_dir.."/"
         end
     end,
 
