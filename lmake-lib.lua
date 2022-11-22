@@ -468,7 +468,7 @@ function lmake.Check()
             end
         end
 
-        for i,v in ipairs(lmake.Data.Includes_dirs) do
+        for i,v in ipairs(lmake.Data.Include_dirs) do
             if string.match(io.popen(lmake.Commands.ListCommand.." "..v, os.clock()), "cannot") then
                 error("Include directory \""..v.."\" does not exist.")
             end
