@@ -74,21 +74,6 @@ lmake.Data = {
 
     }
 
-    Constant = {
-
-        Include_dirs = false,
-        Library_dirs = false,
-        Build_dir    = false,
-        Compiler     = false,
-        Flags        = false,
-        Files        = false,
-        Includes     = false,
-        Librarys     = false,
-        Language     = false,
-        Name         = false
-
-    }
-
 }
 
 lmake.Core = {
