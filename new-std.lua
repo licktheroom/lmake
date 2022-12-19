@@ -26,7 +26,7 @@ table.stepped(t, start, step, finish)
 | Otherwise, it starts from index start in t and steps (adds) step to start every interation until finish. Returns the new table, does not overwrite the original.
 | You do not need to give step nor finish.
 
-table.print(t)
+table.print(t, styled)
 |
 | Print a table and all sub tables.
 
@@ -34,6 +34,14 @@ io.popen(cmd, id)
 |
 | Almost the same as the original, but now (should) work everywhere.
 | id is required as that's what we name the generated file.
+
+io.colors
+|
+| A table of colors.
+
+io.colored(str, color)
+|
+| Returns str in the color of color.
 
 --]]
 
@@ -108,7 +116,7 @@ function table.stepped(t, start, step, finish)
 
 end
 
-function table.print(t) -- styled should be the color var, should be nil or bool
+function table.print(t, styled) -- styled should be the color var, should be nil or bool
 
     -- Check data type
     assert(type(t) == "table", "Table expected, got "..type(t))
@@ -121,15 +129,26 @@ function table.print(t) -- styled should be the color var, should be nil or bool
 
         if type(v) == "table" then
 
-            table.print(v)
+            table.print(v, styled)
 
         elseif type(v) == "string" then
-
-            io.write("\""..v.."\", ")
+	    
+	    if not styled then
+                io.write("\""..v.."\", ")
+	    else
+		io.write(io.colored("\""..v.."\"", "green")..", ")
+	    end
 
         else
-
-            io.write(tostring(v)..", ")
+	    if not styled then
+                io.write(tostring(v)..", ")
+	    elseif type(v) == "function" or type(v) == "userdata" or type(v) == "thread" or type(v) == "nil" then
+		io.write(io.colored(tostring(v), "red")..", ")
+	    elseif type(v) == "boolean" or type(v) == "number" then
+		io.write(io.colored(tostring(v), "yellow")..", ")
+	    else
+		io.write(tostring(v)..", ")
+	    end
 
         end
 
@@ -161,4 +180,20 @@ function io.popen(cmd, id)
 
     return a
 
+end
+
+io.colors = {
+    red = "\27[31m",
+    green = "\27[32m",
+    cyan = "\27[36m",
+    yellow = "\27[33m",
+    reset = "\27[0m"
+}
+
+function io.colored(str, color)
+    assert(type(str) == "string", "Expected string, got "..type(str))
+    assert(type(color) == "string", "Expected string, got "..type(color))
+    assert(io.colors[string.lower(color)] ~= nil, "Color "..color.." does not exist")
+
+    return io.colors[string.lower(color)]..str..io.colors.reset
 end

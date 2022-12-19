@@ -11,6 +11,18 @@ elif [ ${EUID} -eq 0 ] ; then
 
         rm /bin/lmake /usr/share/lua/lmake/new-std.lua /usr/share/lua/lmake/lmake-lib.lua
 
+    elif [ "${1}" = "INSTALL_LIBS" ] ; then
+
+	if [ -d "/usr/share/lua/lmake/" ] ; then
+            cp new-std.lua /usr/share/lua/lmake/new-std.lua
+            cp lmake-lib.lua /usr/share/lua/lmake/lmake-lib.lua
+        else
+            mkdir --parents /usr/share/lua/lmake/
+
+            cp new-std.lua /usr/share/lua/lmake/new-std.lua
+            cp lmake-lib.lua /usr/share/lua/lmake/lmake-lib.lua
+        fi
+
     elif [ -e "lmake" ] ; then
         cp lmake /bin/lmake
 

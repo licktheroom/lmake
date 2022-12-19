@@ -10,12 +10,6 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 ]]
 
---[[
-
-This will face a rewrite as I add in interactions with files.
-
-]]
-
 -- Add our library path to where lua looks for required files
 package.path = package.path..";/usr/share/lua/lmake/?.lua"
 
@@ -24,6 +18,8 @@ require("new-std")
 local lmake_lib = require("lmake-lib")
 
 local version = "v0.1"
+
+local lmake_file = "build.lmake"
 
 -- Start: Handle commandline options
 
@@ -97,6 +93,10 @@ for i,v in ipairs(data) do
 
         lmake_lib.Set(lmake_lib.Enum.Datatype.Name, v[2])
 
+    elseif v[1] == "use" then
+
+	lmake_file = v[2]
+
     else
 
         if v[1] == "build-objects" then
@@ -113,27 +113,7 @@ for i,v in ipairs(data) do
 
 end
 
-table.print(lmake_lib.Data.Include_dirs)
-print("")
-table.print(lmake_lib.Data.Library_dirs)
-print("\n"..lmake_lib.Data.Build_dir.."\n"..lmake_lib.Data.Compiler)
-table.print(lmake_lib.Data.Flags)
-print("")
-table.print(lmake_lib.Data.Files)
-print("")
-table.print(lmake_lib.Data.Includes)
-print("")
-table.print(lmake_lib.Data.Librarys)
-print("\n"..lmake_lib.Data.Language.."\n"..lmake_lib.Data.Name)
-table.print(lmake_lib.Data.CoreFlags)
-print("")
+-- End: Handle commandline options
+-- Compile!
 
 lmake_lib.Compile()
-
--- End: Handle commandline options
--- Start: Handle lmake files
-
-
-
--- End: Handle lmake files
--- Compile!
