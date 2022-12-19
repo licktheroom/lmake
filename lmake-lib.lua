@@ -29,26 +29,19 @@ require("new-std")
 local lmake = {}
 
 lmake.Enum = {
-    Datatype = {
-        IncludeDirs = 1,
-        LibDirs     = 2,
-        BuildDir   = 3,
-        Compiler    = 4,
-        Flags       = 5,
-        Files       = 6,
-        Includes    = 7,
-        Language    = 8,
-        Librarys    = 9,
-        Name        = 10,
-        lmakeFlag   = 11
-    },
+	IncludeDirs = 1,
+	LibDirs     = 2,
+	BuildDir    = 3,
+	Compiler    = 4,
+	Flags       = 5,
+	Includes    = 7,
+	Language    = 8,
+	Librarys    = 9,
+	Name        = 10,
+	lmakeFlag   = 11,
 
-    CoreFlags = {
-
-        BuildObjects   = "BuildObjects",
-        Find           = "Find"
-
-    }
+	BuildObjects = "BuildObjects",
+	Find         = "Find"
 }
 
 lmake.Commands = {
@@ -387,27 +380,27 @@ end
 
 function lmake.Set(datatype, ...)
 
-    if datatype == lmake.Enum.Datatype.IncludeDirs then
+    if datatype == lmake.Enum.IncludeDirs then
         lmake.Core.SetIncludeDirs(...)
-    elseif datatype == lmake.Enum.Datatype.LibDirs then
+    elseif datatype == lmake.Enum.LibDirs then
         lmake.Core.SetLibraryDirs(...)
-    elseif datatype == lmake.Enum.Datatype.BuildDir then
+    elseif datatype == lmake.Enum.BuildDir then
         lmake.Core.SetBuildDir(...)
-    elseif datatype == lmake.Enum.Datatype.Compiler then
+    elseif datatype == lmake.Enum.Compiler then
         lmake.Core.SetCompiler(...)
-    elseif datatype == lmake.Enum.Datatype.Flags then
+    elseif datatype == lmake.Enum.Flags then
         lmake.Core.SetFlags(...)
-    elseif datatype == lmake.Enum.Datatype.Files then
+    elseif datatype == lmake.Enum.Files then
         lmake.Core.SetFiles(...)
-    elseif datatype == lmake.Enum.Datatype.Includes then
+    elseif datatype == lmake.Enum.Includes then
         lmake.Core.SetIncludes(...)
-    elseif datatype == lmake.Enum.Datatype.Language then
+    elseif datatype == lmake.Enum.Language then
         lmake.Core.SetLanguage(...)
-    elseif datatype == lmake.Enum.Datatype.Librarys then
+    elseif datatype == lmake.Enum.Librarys then
         lmake.Core.SetLibrarys(...)
-    elseif datatype == lmake.Enum.Datatype.Name then
+    elseif datatype == lmake.Enum.Name then
         lmake.Core.SetName(...)
-    elseif datatype == lmake.Enum.Datatype.lmakeFlag then
+    elseif datatype == lmake.Enum.lmakeFlag then
         lmake.Core.SetCoreFlag(...)
     else
         lmake.Error("Set", tostring(debug.getinfo(1).currentline), io.colored(tostring(datatype), "red").." does not match any datatypes.")
@@ -417,27 +410,27 @@ end
 
 function lmake.Add(datatype, ...)
 
-    if datatype == lmake.Enum.Datatype.IncludeDirs then
+    if datatype == lmake.Enum.IncludeDirs then
         lmake.Core.AddIncludeDirs(...)
-    elseif datatype == lmake.Enum.Datatype.LibDirs then
+    elseif datatype == lmake.Enum.LibDirs then
         lmake.Core.AddLibraryDirs(...)
-    elseif datatype == lmake.Enum.Datatype.BuildDir then
+    elseif datatype == lmake.Enum.BuildDir then
         lmake.Error("Add", tostring(debug.getinfo(1).currentline), io.colored("Build_dir", "yellow").." cannot be added to, only set.")
-    elseif datatype == lmake.Enum.Datatype.Compiler then
+    elseif datatype == lmake.Enum.Compiler then
         lmake.Error("Add", tostring(debug.getinfo(1).currentline), io.colored("Compiler", "yellow").." cannot be added to, only set.")
-    elseif datatype == lmake.Enum.Datatype.Flags then
+    elseif datatype == lmake.Enum.Flags then
         lmake.Core.AddFlags(...)
-    elseif datatype == lmake.Enum.Datatype.Files then
+    elseif datatype == lmake.Enum.Files then
         lmake.Core.AddFiles(...)
-    elseif datatype == lmake.Enum.Datatype.Includes then
+    elseif datatype == lmake.Enum.Includes then
         lmake.Core.AddIncludes(...)
-    elseif datatype == lmake.Enum.Datatype.Language then
+    elseif datatype == lmake.Enum.Language then
         lmake.Error("Add", tostring(debug.getinfo(1).currentline), io.colored("Language", "yellow").." cannot be added to, only set.")
-    elseif datatype == lmake.Enum.Datatype.Librarys then
+    elseif datatype == lmake.Enum.Librarys then
         lmake.Core.AddLibrarys(...)
-    elseif datatype == lmake.Enum.Datatype.Name then
+    elseif datatype == lmake.Enum.Name then
         lmake.Error("Add", tostring(debug.getinfo(1).currentline), io.colored("Name", "yellow").." cannot be added to, only set.")
-    elseif datatype == lmake.Enum.Datatype.lmakeFlag then
+    elseif datatype == lmake.Enum.lmakeFlag then
         lmake.Error("Add", tostring(debug.getinfo(1).currentline), io.colored("lmakeFlag", "yellow").." cannot be added to, only set.")
     else
         lmake.Error("Add", tostring(debug.getinfo(1).currentline), io.colored(tostring(datatype), "red").." does not match any datatyes.")
@@ -447,27 +440,27 @@ end
 
 function lmake.Remove(datatype, ...)
 
-    if datatype == lmake.Enum.Datatype.IncludeDirs then
+    if datatype == lmake.Enum.IncludeDirs then
         lmake.Core.RemoveIncludeDirs(...)
-    elseif datatype == lmake.Enum.Datatype.LibDirs then
+    elseif datatype == lmake.Enum.LibDirs then
         lmake.Core.RemoveLibraryDirs(...)
-    elseif datatype == lmake.Enum.Datatype.BuildDir then
+    elseif datatype == lmake.Enum.BuildDir then
         lmake.Error("Remove", tostring(debug.getinfo(1).currentline), io.colored("Build_dir", "yellow").." cannot be remove, only set.")
-    elseif datatype == lmake.Enum.Datatype.Compiler then
+    elseif datatype == lmake.Enum.Compiler then
         lmake.Error("Remove", tostring(debug.getinfo(1).currentline), io.colored("Compiler", "yellow").." cannot be removed, only set.")
-    elseif datatype == lmake.Enum.Datatype.Flags then
+    elseif datatype == lmake.Enum.Flags then
         lmake.Core.RemoveFlags(...)
-    elseif datatype == lmake.Enum.Datatype.Files then
+    elseif datatype == lmake.Enum.Files then
         lmake.Core.RemoveFiles(...)
-    elseif datatype == lmake.Enum.Datatype.Includes then
+    elseif datatype == lmake.Enum.Includes then
         lmake.Core.RemoveIncludes(...)
-    elseif datatype == lmake.Enum.Datatype.Language then
+    elseif datatype == lmake.Enum.Language then
         lmake.Error("Remove", tostring(debug.getinfo(1).currentline), io.colored("Language", "yellow").." cannot be removed, only set.")
-    elseif datatype == lmake.Enum.Datatype.Librarys then
+    elseif datatype == lmake.Enum.Librarys then
         lmake.Core.AddLibrarys(...)
-    elseif datatype == lmake.Enum.Datatype.Name then
+    elseif datatype == lmake.Enum.Name then
         lmake.Error("Remove", tostring(debug.getinfo(1).currentline), io.colored("Name", "yellow").." cannot be removed, only set.")
-    elseif datatype == lmake.Enum.Datatype.lmakeFlag then
+    elseif datatype == lmake.Enum.lmakeFlag then
         lmake.Error("Remove", tostring(debug.getinfo(1).currentline), io.colored("lmakeFlag", "yellow").." cannot be removed, only set.") -- maybe i should make this set a flag to false
     else
         lmake.Error("Remove", tostring(debug.getinfo(1).currentline), io.colored(tostring(datatype), "red").." does not match any datatypes.")

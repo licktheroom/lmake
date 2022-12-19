@@ -55,43 +55,43 @@ for i,v in ipairs(data) do
 
     if v[1] == "include-dirs" then
 
-        lmake_lib.Set(lmake_lib.Enum.Datatype.IncludeDirs, table.stepped(v, 2))
+        lmake_lib.Set(lmake_lib.Enum.IncludeDirs, table.stepped(v, 2))
 
     elseif v[1] == "lib-dirs" then
 
-        lmake_lib.Set(lmake_lib.Enum.Datatype.LibDirs, table.stepped(v, 2))
+        lmake_lib.Set(lmake_lib.Enum.LibDirs, table.stepped(v, 2))
 
     elseif v[1] == "build-dir" then
 
-        lmake_lib.Set(lmake_lib.Enum.Datatype.BuildDir, v[2])
+        lmake_lib.Set(lmake_lib.Enum.BuildDir, v[2])
 
     elseif v[1] == "compiler" then
 
-        lmake_lib.Set(lmake_lib.Enum.Datatype.Compiler, v[2])
+        lmake_lib.Set(lmake_lib.Enum.Compiler, v[2])
 
     elseif v[1] == "flags" then
 
-        lmake_lib.Set(lmake_lib.Enum.Datatype.Flags, table.stepped(v, 2))
+        lmake_lib.Set(lmake_lib.Enum.Flags, table.stepped(v, 2))
 
     elseif v[1] == "files" then
 
-        lmake_lib.Set(lmake_lib.Enum.Datatype.Files, table.stepped(v, 2))
+        lmake_lib.Set(lmake_lib.Enum.Files, table.stepped(v, 2))
 
     elseif v[1] == "includes" then
 
-        lmake_lib.Set(lmake_lib.Enum.Datatype.Includes, table.stepped(v, 2))
+        lmake_lib.Set(lmake_lib.Enum.Includes, table.stepped(v, 2))
 
     elseif v[1] == "language" then
 
-        lmake_lib.Set(lmake_lib.Enum.Datatype.Language, v[2])
+        lmake_lib.Set(lmake_lib.Enum.Language, v[2])
 
     elseif v[1] == "librarys" then
 
-        lmake_lib.Set(lmake_lib.Enum.Datatype.Librarys, table.stepped(v, 2))
+        lmake_lib.Set(lmake_lib.Enum.Librarys, table.stepped(v, 2))
 
     elseif v[1] == "name" then
 
-        lmake_lib.Set(lmake_lib.Enum.Datatype.Name, v[2])
+        lmake_lib.Set(lmake_lib.Enum.Name, v[2])
 
     elseif v[1] == "use" then
 
@@ -100,11 +100,11 @@ for i,v in ipairs(data) do
     else
 
         if v[1] == "build-objects" then
-            lmake_lib.Set(lmake_lib.Enum.Datatype.lmakeFlag, lmake_lib.Enum.CoreFlags.BuildObjects)
+            lmake_lib.Set(lmake_lib.Enum.lmakeFlag, lmake_lib.Enum.BuildObjects)
         elseif v[1] == "find" then
-            lmake_lib.Set(lmake_lib.Enum.Datatype.lmakeFlag, lmake_lib.Enum.CoreFlags.Find)
+            lmake_lib.Set(lmake_lib.Enum.lmakeFlag, lmake_lib.Enum.Find)
         elseif v[1] == "c-shared-library" then
-            lmake_lib.Set(lmake_lib.Enum.Datatype.lmakeFlag, lmakie_lib.Enum.CoreFlags.CSharedLibrary)
+            lmake_lib.Set(lmake_lib.Enum.lmakeFlag, lmake_lib.Enum.CSharedLibrary)
         else
             error("Unknown option "..v[1])
         end
