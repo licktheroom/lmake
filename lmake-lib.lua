@@ -24,6 +24,8 @@ lmake.BasicData()
 lmake.Check()
 --]]
 
+require("new-std")
+
 local lmake = {}
 
 lmake.Enum = {
@@ -647,7 +649,7 @@ function lmake.Check()
                 end
             end
 
-	    if #lmake.Data.Librarys != #found then
+	    if #lmake.Data.Librarys ~= #found then
 		    local not_found = {}
 
 		    for i,v in ipairs(lmake.Data.Librarys) do

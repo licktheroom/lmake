@@ -1,72 +1,35 @@
 #!/bin/bash
 # Copyright 2022 licktheroom
 
-if [ "${1}" = "DEBUG" ] ; then
+if [ "${1}" = "debug" ] ; then
 
-    luac -o lmake lmake.lua
+	luac5.4 -o lmake lmake.lua
 
 elif [ ${EUID} -eq 0 ] ; then
 
-    if [ "${1}" = "UNINSTALL" ] ; then
+	if [ "${1}" = "uninstall" ] ; then
+		
+		rm /bin/lmake /usr/share/lua/5.4/new-std.lua /usr/share/lua/5.4/lmake-lib.lua
 
-        rm /bin/lmake /usr/share/lua/lmake/new-std.lua /usr/share/lua/lmake/lmake-lib.lua
+	else
 
-    elif [ "${1}" = "INSTALL_LIBS" ] ; then
+		mkdir -p /usr/share/lua/5.4/
+	
+		cp new-std.lua /usr/share/lua/5.4/new-std.lua
+		cp lmake-lib.lua /usr/share/lua/5.4/lmake-lib.lua
 
-	if [ -d "/usr/share/lua/lmake/" ] ; then
-            cp new-std.lua /usr/share/lua/lmake/new-std.lua
-            cp lmake-lib.lua /usr/share/lua/lmake/lmake-lib.lua
-        else
-            mkdir --parents /usr/share/lua/lmake/
+		if [ "${1}" != "libs-only" ] ; then
+			luac5.4 -o lmake.luac lmake.lua
+			touch lmake
+			{ echo "#!/bin/lua5.4" && cat lmake.luac; } > lmake
+			chmod 775 lmake
+			rm lmake.luac
 
-            cp new-std.lua /usr/share/lua/lmake/new-std.lua
-            cp lmake-lib.lua /usr/share/lua/lmake/lmake-lib.lua
-        fi
-
-    elif [ -e "lmake" ] ; then
-        cp lmake /bin/lmake
-
-        if [ -d "/usr/share/lua/lmake/" ] ; then
-            cp new-std.lua /usr/share/lua/lmake/new-std.lua
-            cp lmake-lib.lua /usr/share/lua/lmake/lmake-lib.lua
-        else
-            mkdir --parents /usr/share/lua/lmake/
-
-            cp new-std.lua /usr/share/lua/lmake/new-std.lua
-            cp lmake-lib.lua /usr/share/lua/lmake/lmake-lib.lua
-        fi
-
-    else
-
-        luac -o lmake.luac lmake.lua
-        touch lmake
-        { echo "#!/bin/lua" && cat lmake.luac; } > lmake
-        chmod 775 lmake
-        rm lmake.luac
-
-        cp lmake /bin/lmake
-
-        if [ -d "/usr/share/lua/lmake/" ] ; then
-            cp new-std.lua /usr/share/lua/lmake/new-std.lua
-            cp lmake-lib.lua /usr/share/lua/lmake/lmake-lib.lua
-        else
-            mkdir --parents /usr/share/lua/lmake/
-
-            cp new-std.lua /usr/share/lua/lmake/new-std.lua
-            cp lmake-lib.lua /usr/share/lua/lmake/lmake-lib.lua
-        fi
-
-    fi
-
-
+			cp lmake /bin/lmake
+		fi
+	fi
 else
 
-    luac -o lmake.luac lmake.lua
-    touch lmake
-    { echo "#!/bin/lua" && cat lmake.luac; } > lmake
-    chmod 775 lmake
-    rm lmake.luac
-
-    echo "Please run as root to install."
+	echo "Please run as admin or do 'install debug'"
 
 fi
