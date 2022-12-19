@@ -353,7 +353,7 @@ lmake.Core = {
     SetCoreFlag = function(...)
         local enum = ...
 
-        lmake.Assert(type(enum) == "number", "SetCoreFlag", tostring(debug.getinfo(1).currentline), "Expected "..io.colored("number", "red")..", got "..io.colored(type(enum), "red"))
+        lmake.Assert(type(enum) == "string", "SetCoreFlag", tostring(debug.getinfo(1).currentline), "Expected "..io.colored("string", "red")..", got "..io.colored(type(enum), "red"))
         lmake.Assert(lmake.Data.CoreFlags[enum] ~= nil, "SetCoreFlag", tostring(debug.getinfo(1).currentline), "Core flag "..io.colored(tostring(enum), "red").." does not exist")
 
         lmake.Data.CoreFlags[enum] = true
@@ -489,6 +489,10 @@ function lmake.Compile()
         ccommand = ccommand.." -L"..v
     end
 
+    for i,v in ipairs(lmake.Data.Librarys) do
+	    ccommand = ccommand.." -l"..v
+    end
+
     -- compile
 
     if lmake.Data.CoreFlags.BuildObjects then
@@ -505,11 +509,13 @@ function lmake.Compile()
             ccommand = ccommand.." "..v..".o"
         end
 
-        print("Compiling all files")
+        print("Compiling all files\n")
 
         local out = io.popen(ccommand, os.clock())
-
-        lmake.Assert(out == "", "Compile", tostring(debug.getinfo(1).currentline), out)
+	
+	if out ~= "" then
+		print(out)
+	end
 
     else
         ccommand = ccommand.." -o "..lmake.Data.Build_dir..lmake.Data.Name
@@ -518,11 +524,14 @@ function lmake.Compile()
             ccommand = ccommand.." "..v
         end
 
-        print("Compiling all files")
+        print("Compiling all files\n")
 
         local out = io.popen(ccommand, os.clock())
 
-        lmake.Assert(out == "", "Compile", tostring(debug.getinfo(1).currentline), out)
+	if out ~= "" then
+		print(out)
+	end
+
     end
 end
 
@@ -634,10 +643,14 @@ function lmake.Check()
 		print("Checking for librarys in "..io.colored(v, "cyan"))
 
                 for a,d in ipairs(lmake.Data.Librarys) do
-
-		    if string.match(cache, "lib"..d..".so") and not table.find(found, d) then
-			    table.insert(found, d)
-		    end
+		    
+		    if not table.find(found, d) then
+			    if string.match(cache, "lib"..d..".so") or not string.match(io.popen(lmake.Commands.ListCommand.." "..v.."lib"..d..".so", os.clock()), "cannot") then
+				    print("Found "..io.colored(d, "green"))
+				    table.insert(found, d)
+			    end
+	
+	    	     end
 
                 end
             end
