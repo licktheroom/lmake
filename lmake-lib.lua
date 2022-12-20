@@ -472,8 +472,6 @@ function lmake.Compile()
     lmake.BasicData()
     lmake.Check()
 
-    print("Compiling...")
-
     -- create command
     local ccommand = lmake.Data.Compiler
 
@@ -497,10 +495,20 @@ function lmake.Compile()
 
     if lmake.Data.CoreFlags.BuildObjects then
         for i,v in ipairs(lmake.Data.Files) do
-	    print("Compiling "..io.colored(v, "cyan"))
+	    io.write("Compiling "..io.colored(v, "cyan"))
             local out = io.popen(ccommand.." -c -o "..v..".o "..v, os.clock())
 
-            lmake.Assert(out == "", "Compile", tostring(debug.getinfo(1).currentline), out)
+	    if out ~= "" and string.match(out, "error") then
+		 print(io.colored("Error", "red"))
+		 print(out)
+		 os.exit()
+
+	    elseif out ~= "" then
+		 print(io.colored("Done", "yello"))
+		 print(out)
+	    else
+		    print(io.colored("Done", "green"))
+	    end
         end
 
         ccommand = ccommand.." -o "..lmake.Data.Build_dir..lmake.Data.Name
@@ -514,7 +522,16 @@ function lmake.Compile()
         local out = io.popen(ccommand, os.clock())
 	
 	if out ~= "" then
+		if string.match(out, "error") then
+			print(io.colored("Error", "red"));
+			print(out)
+			os.exit()
+		end
+
+		print(io.colored("Done", "yello"))
 		print(out)
+	else
+		print(io.colored("Done", "green"))
 	end
 
     else
@@ -529,7 +546,16 @@ function lmake.Compile()
         local out = io.popen(ccommand, os.clock())
 
 	if out ~= "" then
+		if string.match(out, "error") then
+			print(io.colored("Error", "red"));
+			print(out)
+			os.exit()
+		end
+
+		print(io.colored("Done", "yellow"))
 		print(out)
+	else
+		print(io.colored("Done", "green"))
 	end
 
     end
@@ -569,13 +595,12 @@ end
 
 function lmake.Check()
     -- commands
-    print("Finding commands...")
     if lmake.Data.CoreFlags.Find then
 	
-	io.write("Checking for "..io.colored("ls", "cyan").."... ")
+	io.write("Checking for "..io.colored("ls", "cyan").." | ")
 
         if string.match(io.popen("ls", os.clock()), "not") then
-	    io.write(io.colored("Not found", "red").."\nChecking for "..io.colored("dir", "cyan").."... ")
+	    io.write(io.colored("Not found", "red").."\nChecking for "..io.colored("dir", "cyan").." | ")
             lmake.Assert(string.match(io.popen("dir", os.clock()), "not") == nil, "Check", tostring(debug.getinfo(1).currentline), "No list command.")
 
 	    print(io.colored("Found", "green"))
@@ -590,13 +615,12 @@ function lmake.Check()
 
     lmake.Assert(string.match(io.popen(lmake.Data.Compiler.." -v", os.clock()), "not") == nil, "Compiler does not exist.")
     -- files
-    print("Finding files...")
 
     if lmake.Data.CoreFlags.Find then
 
         for i,v in ipairs(lmake.Data.Files) do
 
-	    io.write("Checking "..io.colored(v, "cyan").." ")
+	    io.write("Checking "..io.colored(v, "cyan").." | ")
 
             if string.match(io.popen(lmake.Commands.ListCommand.." "..v, os.clock()), "cannot") then
 		print(io.colored("Not found", "red"))
@@ -609,7 +633,7 @@ function lmake.Check()
 
         for i,v in ipairs(lmake.Data.Library_dirs) do
 
-	    io.write("Checking "..io.colored(v, "cyan").." ")
+	    io.write("Checking "..io.colored(v, "cyan").." | ")
 
             if string.match(io.popen(lmake.Commands.ListCommand.." "..v, os.clock()), "cannot") then
 		print(io.colored("Not found", "red"))
@@ -622,7 +646,7 @@ function lmake.Check()
 
         for i,v in ipairs(lmake.Data.Include_dirs) do
 
-	    io.write("Checking "..io.colored(v, "Cyan").." ")
+	    io.write("Checking "..io.colored(v, "Cyan").." | ")
 
             if string.match(io.popen(lmake.Commands.ListCommand.." "..v, os.clock()), "cannot") then
 		print(io.colored("Not found", "red"))
@@ -646,12 +670,10 @@ function lmake.Check()
 		    
 		    if not table.find(found, d) then
 			    if string.match(cache, "lib"..d..".so") or not string.match(io.popen(lmake.Commands.ListCommand.." "..v.."lib"..d..".so", os.clock()), "cannot") then
-				    print("Found "..io.colored(d, "green"))
+				    print("Found | "..io.colored(d, "green"))
 				    table.insert(found, d)
 			    end
-	
 	    	     end
-
                 end
             end
 
